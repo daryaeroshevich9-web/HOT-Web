@@ -22,18 +22,21 @@ const FLUID_TYPES = [
 
 let metarEvents = null;
 
-async function fetchMetar(icao) {
-  const url = `https://metar.vatsim.net/metar.php?id=${icao}`;
-  console.log(`📡 Запрос к VATSIM: ${icao}`);
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  const text = await response.text();
-  // Ответ может содержать несколько строк — берём первую
-  const lines = text.trim().split('\n');
-  if (lines.length === 0) throw new Error('Пустой ответ');
-  console.log('✅ METAR получен от VATSIM');
-  return lines[0].trim();
-}
+async function init() {
+  console.log('🚀 init() вызван');
+  try {
+    const airports = await loadJSON('data/airports.json');
+    console.log('✅ Аэропорты загружены:', airports);
+    populateAirportSelect(airports);
+    populateFluidSelect(FLUID_TYPES);
+    metarEvents = await loadJSON('data/config/metar_events.json');
+    console.log('✅ metar_events загружены');
+    document.getElementById('calculateBtn').addEventListener('click', onCalculate);
+    console.log('✅ Обработчик кнопки добавлен');
+  } catch (err) {
+    console.error('❌ Ошибка инициализации:', err);
+    document.getElementById('error').textContent = 'Ошибка загрузки данных: ' + err.message;
+  }
 }
 
 function populateAirportSelect(list) {
@@ -116,17 +119,15 @@ async function onCalculate() {
   }
 }
 
-// ===== ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (NOAA, без токена) =====
+// ===== ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (VATSIM, без токена) =====
 async function fetchMetar(icao) {
-  // Используем официальный API National Weather Service (NOAA)
-  // Документация: https://aviationweather.gov/data/api/
-  const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw`;
-  console.log(`📡 Запрос к AviationWeather.gov: ${icao}`);
+  // Используем VATSIM METAR сервис
+  const url = `https://metar.vatsim.net/metar.php?id=${icao}`;
+  console.log(`📡 Запрос к VATSIM: ${icao}`);
 
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      // Если ответ не 200, пробуем прочитать текст ошибки
       let errorText = '';
       try {
         errorText = await response.text();
@@ -135,8 +136,7 @@ async function fetchMetar(icao) {
     }
 
     const text = await response.text();
-    // Ответ может содержать несколько строк (если запрошено несколько ICAO)
-    // Нам нужна первая непустая строка
+    // Ответ может содержать несколько строк — берём первую непустую
     const lines = text.trim().split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) {
       throw new Error('Пустой ответ от сервера');
@@ -147,11 +147,12 @@ async function fetchMetar(icao) {
       throw new Error('Полученная строка слишком короткая для METAR');
     }
 
-    console.log('✅ METAR успешно получен от AviationWeather.gov');
+    console.log('✅ METAR успешно получен от VATSIM');
     return metar;
   } catch (err) {
-    console.error('❌ Ошибка получения METAR от NOAA:', err);
-    // Пробрасываем понятное сообщение пользователю
+    console.error('❌ Ошибка получения METAR от VATSIM:', err);
+    // Если VATSIM не сработал, можно попробовать резервный источник (например, другой прокси)
+    // Но пока просто выбрасываем ошибку с понятным сообщением
     throw new Error(`Не удалось получить METAR: ${err.message}. Попробуйте ввести METAR вручную.`);
   }
 }
