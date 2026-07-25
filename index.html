@@ -10,7 +10,7 @@
     h1 { color: #0d6efd; }
     .form-group { margin-bottom: 20px; }
     label { font-weight: 600; display: block; margin-bottom: 5px; }
-    select, button { width: 100%; padding: 10px 14px; font-size: 16px; border-radius: 6px; border: 1px solid #ced4da; }
+    select, input[type="text"], button { width: 100%; padding: 10px 14px; font-size: 16px; border-radius: 6px; border: 1px solid #ced4da; }
     button { background: #0d6efd; color: white; border: none; cursor: pointer; font-weight: 600; }
     button:hover { background: #0b5ed7; }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -47,6 +47,11 @@
       <label><input type="radio" name="daynight" value="Day" checked> День</label>
       <label><input type="radio" name="daynight" value="Night"> Ночь</label>
     </div>
+  </div>
+
+  <div class="form-group">
+    <label for="manualMetar">Или введите METAR вручную (для теста):</label>
+    <input type="text" id="manualMetar" placeholder="UUEE 251630Z 35003MPS 9999 -SN OVC011 M04/M07..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ced4da;">
   </div>
 
   <button id="calculateBtn">Рассчитать</button>
