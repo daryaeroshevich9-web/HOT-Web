@@ -1,9 +1,11 @@
 // js/metar-parser.js
 
 /**
- * Парсит METAR-строку и возвращает объект с данными
+ * Парсит METAR-строку, используя список разрешённых событий из metar_events.json
+ * @param {string} metar - строка METAR
+ * @param {string[]} allowedEvents - массив допустимых кодов из metar_events.json
  */
-export function parseMetar(metar) {
+export function parseMetar(metar, allowedEvents = []) {
   const raw = metar.trim();
 
   // 1. ICAO (четыре заглавные буквы)
@@ -29,11 +31,19 @@ export function parseMetar(metar) {
     if (visMatch) visibility = parseInt(visMatch[1], 10);
   }
 
-  // 4. События
+  // 4. События: извлекаем все токены [+-]?[A-Z]{2,5}
   const eventRegex = /([+-]?[A-Z]{2,5})/g;
   const allMatches = [...raw.matchAll(eventRegex)].map(m => m[1]);
+
+  // Исключаем заведомо не-события (даже если они есть в списке, их не должно быть)
   const exclude = ['VRB', 'NOSIG', 'CAVOK', 'FEW', 'SCT', 'BKN', 'OVC', 'NSC', 'SKC'];
-  const events = allMatches.filter(code => !exclude.includes(code));
+  const candidates = allMatches.filter(code => !exclude.includes(code));
+
+  // Фильтруем по разрешённому списку, если он передан
+  let events = candidates;
+  if (allowedEvents && allowedEvents.length > 0) {
+    events = candidates.filter(code => allowedEvents.some(ae => ae === code));
+  }
 
   return { icao, temperature, visibility, events, raw };
 }
