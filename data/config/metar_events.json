@@ -1,0 +1,16 @@
+{
+  "metar_events": [
+    "FZDR", "SQ", "PO", "FC", "BR", "HZ", "FU", "DS", "SS", "DRSA", "DRDU", "DU",
+    "DRSN", "BLSN", "VCFG", "FZFG", "MIFG", "PRFG", "FG", "RA", "SN", "RASN",
+    "SNRA", "SNSH", "SHRA", "FZRA", "FZSHRA", "FZDZ", "DZ", "IC", "PL", "PE", "GR",
+    "GS", "SG", "FLASHES", "TS", "TSSN", "TSRA", "TSGR", "TSGS", "TSRAGR",
+    "TSDS", "VCTS"
+  ],
+  "gs_events_for_at": [
+    "-GS", "-GSSN", "-GSFZDZ", "-GSDZ", "-GSFZRA", "-GSRA", "-GSRASN",
+    "-GSFZRASN", "GS", "GSSN", "GSFZDZ", "GSDZ", "GSRA", "-SNGS",
+    "-FZDZGS", "-DZGS", "-FZRAGS", "-RAGS", "-GSSNRA", "-GSSNFZRA",
+    "SNGS", "RAGS", "FZDZGS", "DZGS", "-RAGSSN", "-FZRAGSSN", "-RASNGS",
+    "-FZRASNGS", "-SNGSRA", "-SNGSFZRA", "-SNRAGS", "-SNFZRAGS"
+  ]
+}
