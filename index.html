@@ -5,25 +5,135 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HOT BOT — Веб-версия</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; background: #f8f9fa; }
-    .container { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1 { color: #0d6efd; }
-    .form-group { margin-bottom: 20px; }
-    label { font-weight: 600; display: block; margin-bottom: 5px; }
-    select, input[type="text"], button { width: 100%; padding: 10px 14px; font-size: 16px; border-radius: 6px; border: 1px solid #ced4da; }
-    button { background: #0d6efd; color: white; border: none; cursor: pointer; font-weight: 600; }
+    /* ----- Базовые стили ----- */
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      margin: 0;
+      color: #212529;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #0d6efd;
+      margin-top: 0;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 5px;
+    }
+    select,
+    input[type="text"],
+    button {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ced4da;
+      background: white;
+    }
+    button {
+      background: #0d6efd;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
     button:hover { background: #0b5ed7; }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
-    .result { margin-top: 25px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
-    .hot-value { font-size: 2.2em; font-weight: 700; color: #0d6efd; }
-    .warning { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; border-left: 5px solid #dc3545; }
-    .metar-raw { background: #1e1e1e; color: #d4d4d4; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; margin-top: 10px; display: none; }
-    .metar-raw.show { display: block; }
-    .spinner { display: none; text-align: center; padding: 20px; }
-    .flex { display: flex; gap: 15px; flex-wrap: wrap; }
+    .flex {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
     .flex > * { flex: 1; min-width: 200px; }
-    .concentration-item { background: #e9ecef; padding: 8px 12px; border-radius: 4px; margin: 4px 0; }
-    .error { color: #dc3545; font-weight: 600; }
+    .result {
+      margin-top: 25px;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: none;
+    }
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      font-size: 18px;
+      color: #0d6efd;
+    }
+    .error {
+      color: #dc3545;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .metar-raw {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 12px;
+      border-radius: 6px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      margin-top: 10px;
+      display: none;
+    }
+    .metar-raw.show { display: block; }
+
+    /* ----- Цветовая индикация HOT ----- */
+    .status-success {
+      color: #0a5e3a;
+      background: #d1fae5;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .status-danger {
+      color: #721c24;
+      background: #f8d7da;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .status-warning {
+      color: #856404;
+      background: #fff3cd;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .concentration-item {
+      padding: 6px 12px;
+      border-radius: 6px;
+      margin: 4px 0;
+      font-weight: 500;
+    }
+    .hot-value {
+      font-size: 2.2em;
+      display: inline-block;
+      margin: 8px 0;
+    }
+    .warning-box {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 6px;
+      border-left: 5px solid #dc3545;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -31,16 +141,19 @@
   <h1>🛫 HOT BOT — Расчёт времени защитного действия</h1>
   <p>Выберите аэропорт, тип жидкости и время суток, затем нажмите «Рассчитать».</p>
 
+  <!-- Аэропорт -->
   <div class="form-group">
     <label for="airport">Аэропорт</label>
     <select id="airport"></select>
   </div>
 
+  <!-- Жидкость -->
   <div class="form-group">
     <label for="fluid">Тип жидкости</label>
     <select id="fluid"></select>
   </div>
 
+  <!-- День / Ночь -->
   <div class="form-group">
     <label>Время суток</label>
     <div class="flex">
@@ -49,14 +162,17 @@
     </div>
   </div>
 
+  <!-- Ручной ввод METAR (для теста) -->
   <div class="form-group">
     <label for="manualMetar">Или введите METAR вручную (для теста):</label>
     <input type="text" id="manualMetar" placeholder="UUEE 251630Z 35003MPS 9999 -SN OVC011 M04/M07..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ced4da;">
   </div>
 
+  <!-- Кнопка -->
   <button id="calculateBtn">Рассчитать</button>
 
-  <div id="result" class="result" style="display: none;"></div>
+  <!-- Блоки результата -->
+  <div id="result" class="result"></div>
   <div id="error" class="error"></div>
   <div id="spinner" class="spinner">⏳ Загрузка...</div>
 </div>
