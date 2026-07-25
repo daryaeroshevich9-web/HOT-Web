@@ -1,0 +1,118 @@
+{
+  "temperature_bands": [
+    { "min_inclusive": 1, "max_exclusive": 100 },
+    { "min_inclusive": -5, "max_exclusive": 1 },
+    { "min_inclusive": -10, "max_exclusive": -5 },
+    { "min_inclusive": -16, "max_exclusive": -10 },
+    { "min_inclusive": -22, "max_exclusive": -16 }
+  ],
+  "table": [
+    [
+      "70 minutes",
+      "50 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "40 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "40 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "20 minutes",
+      "35 minutes",
+      "25 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "20 minutes",
+      "15 minutes"
+    ],
+    [
+      "70 minutes",
+      "50 minutes",
+      "40 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "40 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "20 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "35 minutes",
+      "12 minutes",
+      "20 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist"
+    ],
+    [
+      "70 minutes",
+      "30 minutes",
+      "30 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "30 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "35 minutes",
+      "15 minutes",
+      "10 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist"
+    ],
+    [
+      "50 minutes",
+      "25 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "15 minutes",
+      "10 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist"
+    ],
+    [
+      "30 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "10 minutes",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist",
+      "CAUTION:  No holdover time  guidelines exist"
+    ]
+  ],
+  "event_index": [
+    ["-PL", "-GS"],
+    ["-PLSN", "-SNPL", "-GSSN", "-SNGS"],
+    ["-PLFZDZ", "-FZDZPL", "FZDZPL", "+FZDZPL", "-GSFZDZ", "-FZDZGS", "FZDZGS", "+FZDZGS"],
+    ["-PLDZ", "-DZPL", "DZPL", "+DZPL", "-GSDZ", "-DZGS", "DZGS", "+DZGS"],
+    ["-PLFZRA", "-FZRAPL", "-GSFZRA", "-FZRAGS"],
+    ["-PLRA", "-RAPL", "-GSRA", "-RAGS"],
+    [
+      "-PLFZRASN", "-PLSNFZRA", "-FZRAPLSN", "-FZRASNPL", "-SNPLFZRA",
+      "-SNFZRAPL", "-GSFZRASN", "-GSSNFZRA", "-FZRAGSSN", "-FZRASNGS",
+      "-SNGSFZRA", "-SNFZRAGS"
+    ],
+    [
+      "-PLRASN", "-PLSNRA", "-RAPLSN", "-RASNPL", "-SNPLRA", "-SNRAPL",
+      "-GSRASN", "-GSSNRA", "-RAGSSN", "-RASNGS", "-SNGSRA", "-SNRAGS"
+    ],
+    ["PL", "GS"],
+    ["PLSN", "SNPL", "GSSN", "SNGS"],
+    ["PLFZDZ", "GSFZDZ"],
+    ["PLDZ", "GSDZ"],
+    ["PLRA", "RAPL", "GSRA", "RAGS"]
+  ],
+  "event_index_rules": [],
+  "rules": [
+    {
+      "id": "allowance_eg_none",
+      "description": "No allowance for heavy precipitation.",
+      "priority": 10,
+      "when": { "event_index_eq": "Heavy" },
+      "then": { "result": "" }
+    }
+  ]
+}

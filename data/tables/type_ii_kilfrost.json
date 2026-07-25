@@ -1,0 +1,281 @@
+{
+  "temperature_bands": [
+    { "min_inclusive": -3, "max_exclusive": 100 },
+    { "min_inclusive": -8, "max_exclusive": -3 },
+    { "min_inclusive": -14, "max_exclusive": -8 },
+    { "min_inclusive": -18, "max_exclusive": -14 },
+    { "min_inclusive": -25, "max_exclusive": -18 },
+    { "min_inclusive": -29, "max_exclusive": -25 }
+  ],
+  "table": [
+    [
+      { "100/0": "2:15 - 3:45", "75/25": "1:40 - 2:30", "50/50": "0:35 - 1:05" },
+      { "100/0": "0:45 - 1:15", "75/25": "0:25 - 0:50", "50/50": "0:05 - 0:10" },
+      { "100/0": "1:00 - 1:40", "75/25": "0:35 - 1:10", "50/50": "0:07 - 0:15" },
+      { "100/0": "1:50 - 2:00", "75/25": "1:25 - 2:00", "50/50": "0:20 - 0:30" },
+      { "100/0": "1:00 - 1:25", "75/25": "0:50 - 1:10", "50/50": "0:10 - 0:15" },
+      { "100/0": "0:20 - 2:00 if Cold-Soaked Wing", "75/25": "0:15 - 2:00 if Cold-Soaked Wing" },
+      { "100/0": "0:15 - 0:15", "75/25": "0:10 - 0:10" }
+    ],
+    [
+      { "100/0": "0:30 - 1:05", "75/25": "0:25 - 1:25" },
+      { "100/0": "0:40 - 1:10", "75/25": "0:25 - 0:50" },
+      { "100/0": "0:55 - 1:30", "75/25": "0:35 - 1:05" },
+      { "100/0": "0:25 - 1:00", "75/25": "0:20 - 0:55" },
+      { "100/0": "0:15 - 0:35", "75/25": "0:09 - 0:30" }
+    ],
+    [
+      { "100/0": "0:30 - 1:05", "75/25": "0:25 - 1:25" },
+      { "100/0": "0:40 - 1:05", "75/25": "0:25 - 0:50" },
+      { "100/0": "0:50 - 1:25", "75/25": "0:35 - 1:05" },
+      { "100/0": "0:25 - 1:00", "75/25": "0:20 - 0:55" },
+      { "100/0": "0:15 - 0:35", "75/25": "0:09 - 0:30" }
+    ],
+    [
+      { "100/0": "0:30 - 0:55" },
+      { "100/0": "0:01 - 0:05" },
+      { "100/0": "0:02 - 0:07" }
+    ],
+    [
+      { "100/0": "0:30 - 0:55" },
+      { "100/0": "0:00 - 0:02" },
+      { "100/0": "0:01 - 0:03" }
+    ],
+    [
+      { "100/0": "0:30 - 0:55" },
+      { "100/0": "0:00 - 0:00" },
+      { "100/0": "0:00 - 0:01" }
+    ]
+  ],
+  "event_index": [
+    ["FZFG", "FZBR", "IC", "ICFZFG", "ICFZBR"],
+    ["never enter here from loop"],
+    ["never enter here from loop"],
+    ["-SN", "-SG", "-GS"],
+    ["SN", "SG", "GS"],
+    ["FZDZ"],
+    ["-FZRA"],
+    ["RA"]
+  ],
+  "event_index_rules": [
+    {
+      "id": "event_ii_kilfrost_ice_pellets",
+      "description": "Note 10 (TABLE 6): Ice pellets (PL) → Other column. PDF: 'ice pellets (PL)... No holdover time guidelines exist.'",
+      "priority": 1,
+      "when": { "has_ice_pellets": true },
+      "then": { "result": "PL_OTHER" }
+    },
+    {
+      "id": "event_ii_kilfrost_br_freezing",
+      "description": "Note 2 (TABLE 6): BR at OAT ≤ 0 → FZBR (column 0). PDF: 'Freezing mist (FZBR) can occur when mist (BR) is present at 0°C and below.' Takes priority over rain+obscuration.",
+      "priority": 2,
+      "when": { "events_list_has_any": ["BR"], "temp_lte": 0 },
+      "then": { "result": 0 }
+    },
+    {
+      "id": "event_ii_kilfrost_heavy_snow",
+      "description": "Note 10 (TABLE 6): Heavy snow (+SN) → Other column (CAUTION).",
+      "priority": 3,
+      "when": { "heavy_snowfall": true },
+      "then": { "result": "HEAVY_SNOW" }
+    },
+    {
+      "id": "event_ii_kilfrost_rain_obscuration",
+      "description": "Light rain with non-freezing obscuration (-RA + BR at OAT > 0) → no HOT guidelines.",
+      "priority": 4,
+      "when": { "events_list_eq": ["-RA", "BR"] },
+      "then": { "result": "RAIN_OBSCURATION" }
+    },
+    {
+      "id": "event_ii_kilfrost_note6_heavy",
+      "description": "Note 8 (TABLE 6): SNRA/RASN/SNDZ/DZSN with heavy intensity → CAUTION.",
+      "priority": 5,
+      "when": { "note_6": true, "intensity_in": ["Heavy"] },
+      "then": { "result": "NOTE6_CAUTION" }
+    },
+    {
+      "id": "event_ii_kilfrost_note6_moderate",
+      "description": "Note 8 (TABLE 6): SNRA/RASN/SNDZ/DZSN with moderate intensity → use SNRA column.",
+      "priority": 5,
+      "when": { "note_6": true, "intensity_in": ["Moderate"] },
+      "then": { "result": "NOTE6_SNRA" }
+    },
+    {
+      "id": "event_ii_kilfrost_note6_light",
+      "description": "Note 8 (TABLE 6): SNRA/RASN/SNDZ/DZSN with VL/Light intensity → use -FZRA column.",
+      "priority": 6,
+      "when": { "note_6": true, "intensity_in": ["Very Light", "Light"] },
+      "then": { "result": "NOTE6_FZRA" }
+    },
+    {
+      "id": "event_ii_kilfrost_snow_fzfg",
+      "description": "Note 4 (TABLE 6): -SNFZFG/SNFZFG → column 1.",
+      "priority": 7,
+      "when": { "snow_fzfg": true },
+      "then": { "result": 1 }
+    },
+    {
+      "id": "event_ii_kilfrost_snow_obscuration",
+      "description": "Snow with non-freezing obscuration → intensity may be overestimated.",
+      "priority": 10,
+      "when": { "snowfall_and_obscuration": true },
+      "then": { "result": "Heavy" }
+    },
+    {
+      "id": "event_ii_kilfrost_snow",
+      "description": "Note 5 (TABLE 6): Snowfall (SN/SG/GS) → determine intensity via TABLE 1.",
+      "priority": 20,
+      "when": { "snowfall": true },
+      "then": { "result": "SNOWFALL INTENSITIES" }
+    },
+    {
+      "id": "event_ii_kilfrost_obscuration_warm",
+      "description": "Non-freezing obscurations above 0°C → no HOT column exists.",
+      "priority": 28,
+      "when": { "events_list_has_any": ["FG", "BR"], "temp_gt": 0 },
+      "then": { "result": "OBSCURATION_WARM" }
+    },
+    {
+      "id": "event_ii_kilfrost_obscuration",
+      "description": "Non-freezing obscurations at OAT ≤ 0 without snow → use FZFG/FZBR column (index 0).",
+      "priority": 30,
+      "when": { "events_list_has_any": ["FG", "BR"] },
+      "then": { "result": 0 }
+    }
+  ],
+  "rules": [
+    {
+      "id": "hot_ii_kilfrost_temp_below_minus29",
+      "description": "TABLE 6: Below -29°C (LOUT for Kilfrost ABC-K Plus) → no HOT.",
+      "priority": 5,
+      "when": { "temp_lt": -29 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_rain_obscuration",
+      "description": "Rain with obscuration → CAUTION.",
+      "priority": 8,
+      "when": { "event_index_eq": "RAIN_OBSCURATION" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_heavy",
+      "description": "Heavy snowfall intensity → no HOT.",
+      "priority": 10,
+      "when": { "event_index_eq": "Heavy" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_snow_fzfg_heavy",
+      "description": "Note 4 (TABLE 6): -SNFZFG/SNFZFG heavy → no HOT.",
+      "priority": 11,
+      "when": { "event_index_eq": 1, "intensity_eq": "Heavy" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_pl_other",
+      "description": "Note 10 (TABLE 6): Ice pellets (PL) → no HOT guidelines. Use Allowance Times tables instead.",
+      "priority": 9,
+      "when": { "event_index_eq": "PL_OTHER" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_note9_snra_cold",
+      "description": "Note 9 (TABLE 6): No HOT for SNRA/RASN at OAT ≤ 0°C. PDF: 'No holdover time guidelines exist for this condition for 0°C and below.'",
+      "priority": 11,
+      "when": { "event_index_eq": "NOTE6_SNRA", "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_note9_fzra_cold",
+      "description": "Note 9 (TABLE 6): No HOT for light SNRA/RASN redirected to FZRA at OAT ≤ 0°C.",
+      "priority": 12,
+      "when": { "event_index_eq": "NOTE6_FZRA", "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_note6_caution",
+      "description": "Note 8 (TABLE 6): SNRA/RASN heavy → CAUTION.",
+      "priority": 13,
+      "when": { "event_index_eq": "NOTE6_CAUTION" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_note6_snra",
+      "description": "Note 8 (TABLE 6): SNRA/RASN moderate at OAT > 0 → SNRA column (index 6).",
+      "priority": 14,
+      "when": { "event_index_eq": "NOTE6_SNRA" },
+      "then": { "event_index_override": 6 }
+    },
+    {
+      "id": "hot_ii_kilfrost_note6_fzra",
+      "description": "Note 8 (TABLE 6): SNRA/RASN light/VL at OAT > 0 → -FZRA column (index 4).",
+      "priority": 15,
+      "when": { "event_index_eq": "NOTE6_FZRA" },
+      "then": { "event_index_override": 4 }
+    },
+    {
+      "id": "hot_ii_kilfrost_heavy_snow",
+      "description": "Note 10 (TABLE 6): Heavy snowfall (+SN) → no HOT.",
+      "priority": 14,
+      "when": { "event_index_eq": "HEAVY_SNOW" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_rain_cold",
+      "description": "Note 9 (TABLE 6): RA at OAT ≤ 0 → CAUTION.",
+      "priority": 15,
+      "when": { "event_index_eq": 7, "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_rain_cold_soaked",
+      "description": "RA at OAT > 0 → Cold-Soaked Wing column (index 5).",
+      "priority": 16,
+      "when": { "event_index_eq": 7, "temp_gt": 0 },
+      "then": { "event_index_override": 5 }
+    },
+    {
+      "id": "hot_ii_kilfrost_fzdz",
+      "description": "Note 7 (TABLE 6): FZDZ → column 3.",
+      "priority": 17,
+      "when": { "event_index_eq": 5 },
+      "then": { "event_index_override": 3 }
+    },
+    {
+      "id": "hot_ii_kilfrost_fzra",
+      "description": "-FZRA → column 4.",
+      "priority": 18,
+      "when": { "event_index_eq": 6 },
+      "then": { "event_index_override": 4 }
+    },
+    {
+      "id": "hot_ii_kilfrost_snow",
+      "description": "Note 5 (TABLE 6): Snowfall → column 2 (single SN column).",
+      "priority": 20,
+      "when": { "event_index_eq": "SNOWFALL INTENSITIES" },
+      "then": { "event_index_override": 2 }
+    },
+    {
+      "id": "hot_ii_kilfrost_obscuration_warm",
+      "description": "Non-freezing obscuration above 0°C → CAUTION.",
+      "priority": 30,
+      "when": { "event_index_eq": "OBSCURATION_WARM" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_rain_temp_le_zero",
+      "description": "Note 9 (TABLE 6): RA Cold-Soaked Wing at OAT ≤ 0 → CAUTION.",
+      "priority": 60,
+      "when": { "event_index_eq_table_len_ref": true, "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_ii_kilfrost_fz_temp_lt_minus10",
+      "description": "TABLE 6: FZDZ/-FZRA at OAT < -10 → no HOT. Note 11.",
+      "priority": 70,
+      "when": { "event_index_in": [3, 4], "temp_lt": -10 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    }
+  ]
+}

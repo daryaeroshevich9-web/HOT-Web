@@ -1,0 +1,291 @@
+{
+  "temperature_bands": [
+    { "min_inclusive": -3, "max_exclusive": 100 },
+    { "min_inclusive": -6, "max_exclusive": -3 },
+    { "min_inclusive": -10, "max_exclusive": -6 },
+    { "min_inclusive": -100, "max_exclusive": -10 }
+  ],
+  "table": [
+    [
+      { "100/0": "0:11 - 0:17" },
+      { "100/0": "0:05 - 0:08" },
+      { "100/0": "0:18 - 0:22" },
+      { "100/0": "0:11 - 0:18" },
+      { "100/0": "0:06 - 0:11" },
+      { "100/0": "0:09 - 0:13" },
+      { "100/0": "0:02 - 0:05" },
+      { "100/0": "0:02 - 0:05 if Cold-Soaked Wing" },
+      { "100/0": "0:02 - 0:02" }
+    ],
+    [
+      { "100/0": "0:08 - 0:13" },
+      { "100/0": "0:04 - 0:08" },
+      { "100/0": "0:14 - 0:17" },
+      { "100/0": "0:08 - 0:14" },
+      { "100/0": "0:05 - 0:08" },
+      { "100/0": "0:05 - 0:09" },
+      { "100/0": "0:02 - 0:05" }
+    ],
+    [
+      { "100/0": "0:06 - 0:10" },
+      { "100/0": "0:03 - 0:05" },
+      { "100/0": "0:11 - 0:13" },
+      { "100/0": "0:06 - 0:11" },
+      { "100/0": "0:04 - 0:06" },
+      { "100/0": "0:04 - 0:07" },
+      { "100/0": "0:02 - 0:05" }
+    ],
+    [
+      { "100/0": "0:05 - 0:09" },
+      { "100/0": "0:02 - 0:03" },
+      { "100/0": "0:07 - 0:08" },
+      { "100/0": "0:04 - 0:07" },
+      { "100/0": "0:02 - 0:04" }
+    ]
+  ],
+  "event_index": [
+    ["FZFG", "FZBR", "IC", "ICFZFG", "ICFZBR"],
+    ["never enter here from loop"],
+    ["never enter here from loop"],
+    ["-SN", "-SG", "-GS"],
+    ["SN", "SG", "GS"],
+    ["FZDZ"],
+    ["-FZRA"],
+    ["RA"]
+  ],
+  "event_index_rules": [
+    {
+      "id": "event_i_ice_pellets",
+      "description": "Note 11 (TABLE 3): Ice pellets (PL) → Other column. PDF: 'ice pellets (PL)... No holdover time guidelines exist.' Applies to any event containing PL (-PL, -SNPL, PLSN, etc.).",
+      "priority": 1,
+      "when": { "has_ice_pellets": true },
+      "then": { "result": "PL_OTHER" }
+    },
+    {
+      "id": "event_i_br_freezing",
+      "description": "Note 3 (TABLE 3): BR at OAT ≤ 0 → FZBR (column 0). PDF: 'Freezing mist (FZBR) is best confirmed by observation. It is never reported by METAR; however, it can occur when mist (BR) is present at 0°C and below.' Takes priority over rain+obscuration.",
+      "priority": 2,
+      "when": { "events_list_has_any": ["BR"], "temp_lte": 0 },
+      "then": { "result": 0 }
+    },
+    {
+      "id": "event_i_heavy_snow",
+      "description": "Note 11 (TABLE 3): Heavy snow (+SN) → Other column (CAUTION). PDF: 'Heavy snow (+SN)... No holdover time guidelines exist.'",
+      "priority": 3,
+      "when": { "heavy_snowfall": true },
+      "then": { "result": "HEAVY_SNOW" }
+    },
+    {
+      "id": "event_i_rain_obscuration",
+      "description": "Light rain with non-freezing obscuration (-RA + BR at OAT > 0) → no HOT guidelines. BR at ≤ 0 is handled by br_freezing rule above.",
+      "priority": 4,
+      "when": { "events_list_eq": ["-RA", "BR"] },
+      "then": { "result": "RAIN_OBSCURATION" }
+    },
+    {
+      "id": "event_i_note6_heavy",
+      "description": "Note 9 (TABLE 3): SNRA/RASN/SNDZ/DZSN with heavy intensity → CAUTION. PDF: 'No holdover times exist if the reported visibility correlates to a heavy precipitation intensity.'",
+      "priority": 5,
+      "when": { "note_6": true, "intensity_in": ["Heavy"] },
+      "then": { "result": "NOTE6_CAUTION" }
+    },
+    {
+      "id": "event_i_note6_moderate",
+      "description": "Note 9 (TABLE 3): SNRA/RASN/SNDZ/DZSN with moderate intensity → use SNRA column. PDF: 'These holdover times apply to conditions of moderate precipitation intensity.'",
+      "priority": 5,
+      "when": { "note_6": true, "intensity_in": ["Moderate"] },
+      "then": { "result": "NOTE6_SNRA" }
+    },
+    {
+      "id": "event_i_note6_light",
+      "description": "Note 9 (TABLE 3): SNRA/RASN/SNDZ/DZSN with VL/Light intensity → use -FZRA column. PDF: 'In cases of very light or light snow mixed with light rain or drizzle (very light/light -SNRA or -SNDZ), use light freezing rain (-FZRA) holdover times.'",
+      "priority": 6,
+      "when": { "note_6": true, "intensity_in": ["Very Light", "Light"] },
+      "then": { "result": "NOTE6_FZRA" }
+    },
+    {
+      "id": "event_i_snow_fzfg",
+      "description": "Note 5 (TABLE 3): -SNFZFG/SNFZFG → column 1. PDF: 'The Snowfall Intensities table is required to confirm the precipitation intensity is no greater than moderate.' Separate column for snow mixed with freezing fog.",
+      "priority": 7,
+      "when": { "snow_fzfg": true },
+      "then": { "result": 1 }
+    },
+    {
+      "id": "event_i_fzfg_fzdz",
+      "description": "FZFG combined with -FZDZ → use FZFG column (column 0). The freezing fog condition takes priority.",
+      "priority": 8,
+      "when": { "events_list_eq": ["FZFG", "-FZDZ"] },
+      "then": { "result": "FZFG_FZDZ" }
+    },
+    {
+      "id": "event_i_snow_obscuration",
+      "description": "Note from TABLE 1: Snow with non-freezing obscuration (FG, HZ, FU etc.) → may overestimate snowfall intensity. PDF: 'If the visibility is being reduced by snow along with form(s) of obscuration such as fog (FG), haze (HZ), smoke (FU)...'",
+      "priority": 20,
+      "when": { "snowfall_and_obscuration": true },
+      "then": { "result": "SNOWFALL_OBSCURATION" }
+    },
+    {
+      "id": "event_i_snow",
+      "description": "Note 6 (TABLE 3): Snowfall (SN/SG/GS) → determine intensity via TABLE 1. PDF: 'To determine snowfall intensity, the Snowfall Intensities as a Function of Prevailing Visibility table is required.'",
+      "priority": 30,
+      "when": { "snowfall": true },
+      "then": { "result": "SNOWFALL INTENSITIES" }
+    },
+    {
+      "id": "event_i_obscuration",
+      "description": "Non-freezing obscurations (FG, BR above 0, HZ, FU, etc.) without snow → no HOT column exists for these. Routes to OBSCURATION handler in rules.",
+      "priority": 40,
+      "when": { "events_list_has_any": ["FG", "BR"] },
+      "then": { "result": "OBSCURATION" }
+    }
+  ],
+  "rules": [
+    {
+      "id": "hot_i_temp_below_minus25",
+      "description": "TABLE 3: Below -25°C → no HOT guidelines for Type I. The table has no data rows below OAT < -10 for FZDZ/-FZRA columns and no SNRA/RA columns below -3°C.",
+      "priority": 5,
+      "when": { "temp_lt": -25 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_rain_obscuration",
+      "description": "Rain with non-freezing obscuration → no HOT guidelines.",
+      "priority": 8,
+      "when": { "event_index_eq": "RAIN_OBSCURATION" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_pl_other",
+      "description": "Note 11 (TABLE 3): Ice pellets (PL) → no HOT guidelines. PDF: 'ice pellets (PL)... No holdover time guidelines exist.' Use Allowance Times tables (TABLE 10/11) instead.",
+      "priority": 9,
+      "when": { "event_index_eq": "PL_OTHER" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_note9_snra_cold",
+      "description": "Note 10 (TABLE 3): No HOT for SNRA/RASN/SNDZ/DZSN at OAT ≤ 0°C. PDF: 'No holdover time guidelines exist for this condition for 0°C and below.'",
+      "priority": 11,
+      "when": { "event_index_eq": "NOTE6_SNRA", "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_note9_fzra_cold",
+      "description": "Note 10 (TABLE 3): No HOT for light SNRA/RASN redirected to FZRA at OAT ≤ 0°C. PDF: 'No holdover time guidelines exist for this condition for 0°C and below.'",
+      "priority": 12,
+      "when": { "event_index_eq": "NOTE6_FZRA", "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_fzfg_fzdz",
+      "description": "FZFG combined with -FZDZ → use FZFG/FZBR/IC column (column 0). Note 4: freezing fog takes priority.",
+      "priority": 10,
+      "when": { "event_index_eq": "FZFG_FZDZ" },
+      "then": { "event_index_override": 0 }
+    },
+    {
+      "id": "hot_i_snow_fzfg_heavy",
+      "description": "Note 5 (TABLE 3): -SNFZFG/SNFZFG with heavy intensity → no HOT. PDF: 'No holdover times exist if the reported visibility correlates to a heavy precipitation intensity.'",
+      "priority": 11,
+      "when": { "event_index_eq": 1, "intensity_eq": "Heavy" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_note6_caution",
+      "description": "Note 9 (TABLE 3): SNRA/RASN/SNDZ/DZSN with heavy intensity → CAUTION.",
+      "priority": 13,
+      "when": { "event_index_eq": "NOTE6_CAUTION" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_note6_snra",
+      "description": "Note 9 (TABLE 3): SNRA/RASN/SNDZ/DZSN moderate at OAT > 0 → use SNRA column (index 8).",
+      "priority": 14,
+      "when": { "event_index_eq": "NOTE6_SNRA" },
+      "then": { "event_index_override": 8 }
+    },
+    {
+      "id": "hot_i_note6_fzra",
+      "description": "Note 9 (TABLE 3): SNRA/RASN/SNDZ/DZSN light/VL at OAT > 0 → use -FZRA column (index 6). PDF: 'use light freezing rain (-FZRA) holdover times.'",
+      "priority": 15,
+      "when": { "event_index_eq": "NOTE6_FZRA" },
+      "then": { "event_index_override": 6 }
+    },
+    {
+      "id": "hot_i_heavy_snow",
+      "description": "Note 11 (TABLE 3): Heavy snowfall (+SN) → no HOT guidelines.",
+      "priority": 14,
+      "when": { "event_index_eq": "HEAVY_SNOW" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_heavy",
+      "description": "Heavy snowfall intensity → no HOT guidelines.",
+      "priority": 20,
+      "when": { "event_index_eq": "Heavy" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_snow_obscuration",
+      "description": "Snowfall with non-freezing obscuration → CAUTION.",
+      "priority": 30,
+      "when": { "event_index_eq": "SNOWFALL_OBSCURATION" },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_snow_moderate",
+      "description": "Note 6 (TABLE 3): Moderate snowfall → column 4.",
+      "priority": 50,
+      "when": { "event_index_eq": "SNOWFALL INTENSITIES", "intensity_eq": "Moderate" },
+      "then": { "event_index_override": 4 }
+    },
+    {
+      "id": "hot_i_snow_light",
+      "description": "Note 6 (TABLE 3): Light snowfall → column 3.",
+      "priority": 60,
+      "when": { "event_index_eq": "SNOWFALL INTENSITIES", "intensity_eq": "Light" },
+      "then": { "event_index_override": 3 }
+    },
+    {
+      "id": "hot_i_rain_temp_le_zero",
+      "description": "Note 10 (TABLE 3): RA on Cold-Soaked Wing at OAT ≤ 0 → CAUTION. PDF: 'No holdover time guidelines exist for this condition for 0°C and below.'",
+      "priority": 60,
+      "when": { "event_index_eq_table_len_ref": true, "temp_lte": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_snow_very_light",
+      "description": "Note 6 (TABLE 3): Very Light snowfall → column 2.",
+      "priority": 70,
+      "when": { "event_index_eq": "SNOWFALL INTENSITIES", "intensity_eq": "Very Light" },
+      "then": { "event_index_override": 2 }
+    },
+    {
+      "id": "hot_i_fz_temp_lt_minus10",
+      "description": "TABLE 3: FZDZ/-FZRA at OAT < -10 → no HOT guidelines (no data in table below -10°C band for these columns).",
+      "priority": 70,
+      "when": { "event_index_in": [5, 6], "temp_lt": -10 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_obscuration_cold",
+      "description": "Non-freezing obscuration (FG, HZ, etc.) at OAT < 0 → CAUTION. These events are not in any HOT table column.",
+      "priority": 80,
+      "when": { "event_index_eq": "OBSCURATION", "temp_lt": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_obscuration_warm",
+      "description": "Non-freezing obscuration at OAT > 0 → CAUTION.",
+      "priority": 90,
+      "when": { "event_index_eq": "OBSCURATION", "temp_gt": 0 },
+      "then": { "result": "CAUTION:  No holdover time  guidelines exist" }
+    },
+    {
+      "id": "hot_i_obscuration",
+      "description": "Non-freezing obscuration at exactly OAT = 0 → use FZFG/FZBR/IC column.",
+      "priority": 100,
+      "when": { "event_index_eq": "OBSCURATION" },
+      "then": { "event_index_override": 0 }
+    }
+  ]
+}

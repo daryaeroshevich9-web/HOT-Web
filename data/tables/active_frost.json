@@ -1,0 +1,47 @@
+{
+  "temperature_bands": [
+    { "min_inclusive": -1, "max_exclusive": 100 },
+    { "min_inclusive": -3, "max_exclusive": -1 },
+    { "min_inclusive": -10, "max_exclusive": -3 },
+    { "min_inclusive": -14, "max_exclusive": -10 },
+    { "min_inclusive": -21, "max_exclusive": -14 },
+    { "min_inclusive": -25, "max_exclusive": -21 }
+  ],
+  "table": [
+    [
+      { "100/0": "8:00", "75/25": "5:00", "50/50": "2:00" },
+      { "100/0": "12:00", "75/25": "5:00", "50/50": "3:00" }
+    ],
+    [
+      { "100/0": "8:00", "75/25": "5:00", "50/50": "1:30" },
+      { "100/0": "12:00", "75/25": "5:00", "50/50": "3:00" }
+    ],
+    [
+      { "100/0": "8:00", "75/25": "4:00" },
+      { "100/0": "10:00", "75/25": "5:00" }
+    ],
+    [
+      { "100/0": "6:00", "75/25": "1:00" },
+      { "100/0": "6:00", "75/25": "1:00" }
+    ],
+    [
+      { "100/0": "3:00" },
+      { "100/0": "6:00" }
+    ],
+    [
+      { "100/0": "2:00" },
+      { "100/0": "4:00" }
+    ]
+  ],
+  "event_index": [],
+  "event_index_rules": [],
+  "rules": [
+    {
+      "id": "active_frost_date_unknown",
+      "description": "Unknown date -> no guidelines.",
+      "priority": 20,
+      "when": { "event_index_eq": "Unknown date" },
+      "then": { "result": "CAUTION: No holdover time guidelines exist" }
+    }
+  ]
+}
