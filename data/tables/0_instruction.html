@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Инструкция: создание JSON для HOT-жидкости</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 20px;
+      color: #212529;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #0d6efd;
+      border-bottom: 3px solid #0d6efd;
+      padding-bottom: 10px;
+      margin-top: 0;
+    }
+    h2 {
+      color: #0d6efd;
+      margin-top: 30px;
+      border-left: 6px solid #0d6efd;
+      padding-left: 15px;
+    }
+    h3 {
+      color: #1a1a1a;
+      margin-top: 25px;
+    }
+    .badge {
+      display: inline-block;
+      background: #0d6efd;
+      color: white;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .warning {
+      background: #fff3cd;
+      border-left: 5px solid #ffc107;
+      padding: 12px 18px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    .tip {
+      background: #d1ecf1;
+      border-left: 5px solid #17a2b8;
+      padding: 12px 18px;
+      margin: 15px 0;
+      border-radius: 4px;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.5;
+      font-family: 'Courier New', monospace;
+    }
+    pre .key { color: #9cdcfe; }
+    pre .string { color: #ce9178; }
+    pre .number { color: #b5cea8; }
+    pre .comment { color: #6a9955; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+    }
+    th, td {
+      border: 1px solid #dee2e6;
+      padding: 10px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #e9ecef;
+      font-weight: 600;
+    }
+    .field-list {
+      list-style: none;
+      padding-left: 0;
+    }
+    .field-list li {
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+    }
+    .field-list li::before {
+      content: "●";
+      color: #0d6efd;
+      font-weight: bold;
+      position: absolute;
+      left: 0;
+    }
+    .example-box {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin: 10px 0;
+    }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #dee2e6;
+      text-align: center;
+      font-size: 14px;
+      color: #6c757d;
+    }
+    @media (max-width: 768px) {
+      .container { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>📄 Сборка JSON-файла для новой противообледенительной жидкости</h1>
+  <p style="font-size: 1.1rem; color: #495057;">Инструкция для сотрудника, который получает таблицу HOT (Holdover Time) и должен создать единый JSON-файл для веб-приложения.</p>
+
+  <!-- Оглавление -->
+  <div style="background: #e9ecef; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
+    <strong>Содержание:</strong>
+    <ul style="margin: 8px 0 0 20px;">
+      <li><a href="#goal">Цель</a></li>
+      <li><a href="#structure">Структура итогового JSON</a></li>
+      <li><a href="#temp_bands">1. temperature_bands</a></li>
+      <li><a href="#table">2. table</a></li>
+      <li><a href="#event_index">3. event_index</a></li>
+      <li><a href="#event_rules">4. event_index_rules</a></li>
+      <li><a href="#rules">5. rules</a></li>
+      <li><a href="#algorithm">Алгоритм работы</a></li>
+      <li><a href="#steps">Пошаговая инструкция</a></li>
+      <li><a href="#faq">Часто задаваемые вопросы</a></li>
+      <li><a href="#example">Пример готового файла</a></li>
+    </ul>
+  </div>
+
+  <!-- ============================================ -->
+  <h2 id="goal">Цель</h2>
+  <p>Создать один JSON-файл, содержащий <strong>все данные</strong> для расчёта времени защитного действия (HOT) для конкретной жидкости. Файл используется веб-приложением для вычисления HOT на основе погодных условий (METAR).</p>
+
+  <div class="warning">
+    <strong>Важно:</strong> Все 5 полей обязательно должны присутствовать, даже если они пустые (<code>[]</code> или <code>{}</code>).
+  </div>
+
+  <!-- ============================================ -->
+  <h2 id="structure">Структура итогового JSON</h2>
+  <pre>{
+  <span class="key">"temperature_bands"</span>: [ ... ],
+  <span class="key">"table"</span>: [ ... ],
+  <span class="key">"event_index"</span>: [ ... ],
+  <span class="key">"event_index_rules"</span>: [ ... ],
+  <span class="key">"rules"</span>: [ ... ]
+}</pre>
+
+  <!-- ============================================ -->
+  <h2 id="temp_bands">1. <code>temperature_bands</code> – диапазоны температур</h2>
+  <p>Задаёт, для каких температур (OAT) есть данные. Каждый диапазон соответствует <strong>строке</strong> таблицы.</p>
+  <p><span class="badge">Формат</span> Массив объектов:</p>
+  <pre>[
+  { <span class="key">"min_inclusive"</span>: -3, <span class="key">"max_exclusive"</span>: 100 },
+  { <span class="key">"min_inclusive"</span>: -8, <span class="key">"max_exclusive"</span>: -3 },
+  ...
+]</pre>
+  <ul>
+    <li><strong><code>min_inclusive</code></strong> – нижняя граница (включительно).</li>
+    <li><strong><code>max_exclusive</code></strong> – верхняя граница (не включается).</li>
+    <li>Диапазоны идут <strong>по возрастанию</strong> температуры.</li>
+    <li>Последний диапазон часто имеет <code>"max_exclusive": -100</code> (или другое очень низкое значение).</li>
+  </ul>
+
+  <!-- ============================================ -->
+  <h2 id="table">2. <code>table</code> – таблица HOT</h2>
+  <p>Двумерный массив: строки = температурные диапазоны, столбцы = группы событий.</p>
+  <p><span class="badge">Формат</span> Каждая ячейка – объект с ключами концентраций:</p>
+  <pre>{
+  <span class="key">"100/0"</span>: <span class="string">"0:15 - 0:30"</span>,
+  <span class="key">"75/25"</span>: <span class="string">"0:10 - 0:20"</span>,
+  <span class="key">"50/50"</span>: <span class="string">"0:05 - 0:10"</span>
+}</pre>
+  <ul>
+    <li>Количество строк = <code>temperature_bands.length</code>.</li>
+    <li>Строки могут иметь <strong>разную длину</strong> (если для некоторых столбцов нет данных при низких температурах).</li>
+    <li>Если значения нет – ставьте <code>null</code>.</li>
+    <li>Время пишется в формате <code>"ЧЧ:ММ - ЧЧ:ММ"</code> (диапазон) или <code>"ЧЧ:ММ"</code> (конкретное).</li>
+    <li>Допустимы пояснения: <code>"0:15 - 2:00 if Cold-Soaked Wing"</code>.</li>
+  </ul>
+
+  <!-- ============================================ -->
+  <h2 id="event_index">3. <code>event_index</code> – группы событий</h2>
+  <p>Определяет, какой столбец таблицы соответствует какому набору METAR-кодов.</p>
+  <p><span class="badge">Формат</span> Массив массивов строк:</p>
+  <pre>[
+  [<span class="string">"FZFG"</span>, <span class="string">"FZBR"</span>, <span class="string">"IC"</span>],
+  [<span class="string">"-SN"</span>, <span class="string">"-SG"</span>],
+  [<span class="string">"SN"</span>, <span class="string">"SG"</span>],
+  ...
+]</pre>
+  <ul>
+    <li>Порядок групп важен: группа с индексом 0 → столбец 0, индекс 1 → столбец 1 и т.д.</li>
+    <li>Если событие входит в несколько групп, берётся <strong>первая</strong> подходящая (если нет правил переопределения).</li>
+    <li>Если у вас нет чётких групп, скопируйте из похожего типа (например, из <code>type_i.json</code>).</li>
+  </ul>
+
+  <!-- ============================================ -->
+  <h2 id="event_rules">4. <code>event_index_rules</code> – правила переопределения индекса события</h2>
+  <p>Применяются <strong>до</strong> поиска по <code>event_index</code>. Могут сразу вернуть результат (предупреждение) или задать конкретный индекс столбца.</p>
+  <p><span class="badge">Формат</span> Массив объектов:</p>
+  <pre>{
+  <span class="key">"id"</span>: <span class="string">"br_freezing"</span>,
+  <span class="key">"description"</span>: <span class="string">"BR at OAT ≤ 0 → FZBR column"</span>,
+  <span class="key">"priority"</span>: 2,
+  <span class="key">"when"</span>: { <span class="key">"events_list_has_any"</span>: [<span class="string">"BR"</span>], <span class="key">"temp_lte"</span>: 0 },
+  <span class="key">"then"</span>: { <span class="key">"event_index_override"</span>: 0 }
+}</pre>
+  <ul>
+    <li><strong><code>priority</code></strong> – чем меньше число, тем выше приоритет. Если несколько правил подходят, сработает правило с наименьшим приоритетом.</li>
+    <li><strong><code>when</code></strong> – условия:
+      <ul>
+        <li><code>temp_lt</code>, <code>temp_lte</code>, <code>temp_gt</code>, <code>temp_gte</code> – сравнение температуры.</li>
+        <li><code>intensity_eq</code>, <code>intensity_in</code> – интенсивность осадков.</li>
+        <li><code>event_index_eq</code>, <code>event_index_in</code> – проверка текущего индекса.</li>
+        <li><code>note_6</code>, <code>snowfall</code>, <code>heavy_snowfall</code>, <code>light_snowfall</code>, <code>has_ice_pellets</code>, <code>snowfall_and_obscuration</code> – булевы флаги контекста.</li>
+        <li><code>events_list_has_any</code> – есть ли хотя бы одно событие из списка.</li>
+        <li><code>events_list_eq</code> – точное совпадение списка событий.</li>
+      </ul>
+    </li>
+    <li><strong><code>then</code></strong> – действие:
+      <ul>
+        <li><code>"result": "текст"</code> – сразу вернуть это значение (HOT или предупреждение).</li>
+        <li><code>"event_index_override": число</code> – использовать указанный индекс столбца.</li>
+      </ul>
+    </li>
+  </ul>
+  <div class="tip">
+    <strong>Совет:</strong> Если особых правил нет, оставьте <code>[]</code>.
+  </div>
+
+  <!-- ============================================ -->
+  <h2 id="rules">5. <code>rules</code> – финальные корректирующие правила</h2>
+  <p>Применяются <strong>после</strong> того, как определены индексы. Могут переопределить HOT или изменить индекс.</p>
+  <p>Формат и условия такие же, как в <code>event_index_rules</code>. Обычно здесь:</p>
+  <ul>
+    <li>Ограничения по температуре (например, при <code>temp &lt; -25</code> → предупреждение).</li>
+    <li>Выбор столбца в зависимости от интенсивности снега (например, <code>"Light snow" → column 3</code>).</li>
+    <li>Особые случаи (например, <code>"RA at OAT ≤ 0" → предупреждение</code>).</li>
+  </ul>
+  <div class="warning">
+    Если правило возвращает <code>"result"</code>, расчёт HOT прекращается, и это значение показывается пользователю.
+  </div>
+
+  <!-- ============================================ -->
+  <h2 id="algorithm">Алгоритм работы системы с вашим JSON</h2>
+  <ol>
+    <li>Получает METAR, парсит температуру, события, определяет интенсивность и контекстные флаги.</li>
+    <li>Применяет <code>event_index_rules</code> (по приоритету). Если правило вернуло <code>result</code> – возвращает его.</li>
+    <li>Если индекс не определён правилами, ищет по <code>event_index</code> (первая подходящая группа).</li>
+    <li>Определяет <code>temp_index</code> – индекс первого диапазона из <code>temperature_bands</code>, куда попадает OAT.</li>
+    <li>Применяет <code>rules</code> – они могут переопределить индекс или вернуть <code>result</code>.</li>
+    <li>Пытается взять значение из <code>table[temp_index][event_index]</code>.</li>
+    <li>Если значение – объект с концентрациями, возвращает все ключи (для каждой концентрации своё время).</li>
+    <li>Если значение отсутствует (null или нет такого столбца) – возвращает предупреждение.</li>
+  </ol>
+
+  <!-- ============================================ -->
+  <h2 id="steps">Пошаговая инструкция для нового сотрудника</h2>
+  <ol>
+    <li><strong>Получите исходную таблицу</strong> (Excel/PDF). В ней есть:
+      <ul>
+        <li>Диапазоны температур (строки).</li>
+        <li>Группы погодных условий (столбцы) – их названия.</li>
+        <li>Значения времени на пересечениях, иногда с пометками.</li>
+        <li>Особые примечания (сноски) – например, «при OAT &lt; -25°C HOT не определяется».</li>
+      </ul>
+    </li>
+    <li><strong>Заполните <code>temperature_bands</code></strong> – выпишите все диапазоны в порядке возрастания температуры.</li>
+    <li><strong>Заполните <code>table</code></strong> – для каждой строки создайте массив ячеек. В каждой ячейке – объект с концентрациями. Если в таблице только 100/0, пишите <code>{ "100/0": "значение" }</code>. Если есть 75/25 и 50/50 – добавляйте их. Для пустых ячеек ставьте <code>null</code>.</li>
+    <li><strong>Заполните <code>event_index</code></strong> – сгруппируйте столбцы по событиям METAR. Если не уверены, скопируйте из существующего файла похожего типа.</li>
+    <li><strong>Заполните <code>event_index_rules</code></strong> – выпишите все особые правила из сносок, которые влияют на выбор столбца. Если их нет – оставьте <code>[]</code>.</li>
+    <li><strong>Заполните <code>rules</code></strong> – правила, которые влияют на итоговое значение (температурные ограничения, интенсивность, особые случаи). Если их нет – <code>[]</code>.</li>
+    <li><strong>Проверьте согласованность</strong>:
+      <ul>
+        <li>Количество строк в <code>table</code> равно <code>temperature_bands.length</code>.</li>
+        <li>Максимальный индекс столбца, используемый в правилах, не превышает длину <code>event_index</code> (если превышает – ничего страшного, будет предупреждение).</li>
+        <li>Все значения времени корректны.</li>
+      </ul>
+    </li>
+    <li><strong>Сохраните файл</strong> с именем <code>тип_жидкости.json</code> (например, <code>type_ii_cryotech.json</code>, <code>active_frost.json</code>) в папку <code>data/tables/</code> проекта.</li>
+  </ol>
+
+  <!-- ============================================ -->
+  <h2 id="faq">Часто задаваемые вопросы</h2>
+  <div style="margin-top: 10px;">
+    <div style="margin-bottom: 15px;">
+      <strong>Вопрос:</strong> Что если у меня нет <code>event_index</code> и <code>event_index_rules</code>, а только таблица?
+      <br>
+      <strong>Ответ:</strong> Скопируйте <code>event_index</code> из похожего типа (например, для Type II или IV). Если группы событий отличаются, создайте свои, ориентируясь на названия столбцов в таблице.
+    </div>
+    <div style="margin-bottom: 15px;">
+      <strong>Вопрос:</strong> Строки таблицы имеют разную длину – это нормально?
+      <br>
+      <strong>Ответ:</strong> Да, это допустимо. Если система попытается обратиться к столбцу, которого нет в строке, она вернёт предупреждение.
+    </div>
+    <div style="margin-bottom: 15px;">
+      <strong>Вопрос:</strong> Как узнать, какие коды METAR использовать в <code>event_index</code>?
+      <br>
+      <strong>Ответ:</strong> Список возможных кодов приведён в файле <code>data/config/metar_events.json</code>. В <code>event_index</code> вы используете те, которые соответствуют столбцам таблицы.
+    </div>
+    <div style="margin-bottom: 15px;">
+      <strong>Вопрос:</strong> Можно ли скопировать правила из другого типа?
+      <br>
+      <strong>Ответ:</strong> <code>event_index</code> часто одинаков для разных типов (например, Type II и IV), но <code>rules</code> и <code>event_index_rules</code> обычно уникальны для каждой жидкости. Их нужно заполнять на основе конкретной таблицы.
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <h2 id="example">Пример готового файла (фрагмент для Type I)</h2>
+  <pre>{
+  <span class="key">"temperature_bands"</span>: [
+    { <span class="key">"min_inclusive"</span>: -3, <span class="key">"max_exclusive"</span>: 100 },
+    { <span class="key">"min_inclusive"</span>: -6, <span class="key">"max_exclusive"</span>: -3 },
+    { <span class="key">"min_inclusive"</span>: -10, <span class="key">"max_exclusive"</span>: -6 },
+    { <span class="key">"min_inclusive"</span>: -100, <span class="key">"max_exclusive"</span>: -10 }
+  ],
+  <span class="key">"table"</span>: [
+    [
+      { <span class="key">"100/0"</span>: <span class="string">"0:11 - 0:17"</span> },
+      { <span class="key">"100/0"</span>: <span class="string">"0:05 - 0:08"</span> },
+      { <span class="key">"100/0"</span>: <span class="string">"0:18 - 0:22"</span> }
+    ],
+    [
+      { <span class="key">"100/0"</span>: <span class="string">"0:08 - 0:13"</span> },
+      { <span class="key">"100/0"</span>: <span class="string">"0:04 - 0:08"</span> },
+      { <span class="key">"100/0"</span>: <span class="string">"0:14 - 0:17"</span> }
+    ]
+  ],
+  <span class="key">"event_index"</span>: [
+    [<span class="string">"FZFG"</span>, <span class="string">"FZBR"</span>, <span class="string">"IC"</span>],
+    [<span class="string">"-SN"</span>, <span class="string">"-SG"</span>],
+    [<span class="string">"SN"</span>, <span class="string">"SG"</span>]
+  ],
+  <span class="key">"event_index_rules"</span>: [
+    {
+      <span class="key">"id"</span>: <span class="string">"br_freezing"</span>,
+      <span class="key">"priority"</span>: 2,
+      <span class="key">"when"</span>: { <span class="key">"events_list_has_any"</span>: [<span class="string">"BR"</span>], <span class="key">"temp_lte"</span>: 0 },
+      <span class="key">"then"</span>: { <span class="key">"event_index_override"</span>: 0 }
+    }
+  ],
+  <span class="key">"rules"</span>: [
+    {
+      <span class="key">"id"</span>: <span class="string">"low_temp"</span>,
+      <span class="key">"priority"</span>: 5,
+      <span class="key">"when"</span>: { <span class="key">"temp_lt"</span>: -25 },
+      <span class="key">"then"</span>: { <span class="key">"result"</span>: <span class="string">"CAUTION: No holdover time guidelines exist"</span> }
+    }
+  ]
+}</pre>
+
+  <div class="tip">
+    <strong>Проверка:</strong> После создания файла сравните его с существующими (например, <code>type_i.json</code>). Убедитесь, что структура и названия полей совпадают. При возникновении вопросов обращайтесь к разработчику.
+  </div>
+
+  <div class="footer">
+    Инструкция версии 1.0. Актуальна для проекта HOT-Web.
+  </div>
+
+</div>
+</body>
+</html>
