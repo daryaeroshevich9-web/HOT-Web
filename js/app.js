@@ -9,7 +9,6 @@ console.log('✅ app.js загружен');
 // AVWX API токен
 const AVWX_TOKEN = 'y8jsHvPSDVHkuwzlJg_xJGePHZGyl04aM6155VY8utU';
 
-// Список жидкостей (Active Frost разделён на подтипы)
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
   { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
@@ -122,29 +121,38 @@ async function onCalculate() {
   }
 }
 
-// ---- НОВАЯ ФУНКЦИЯ ДЛЯ AVWX ----
+// === НОВАЯ ФУНКЦИЯ FETCH METAR (AVWX + резерв) ===
 async function fetchMetar(icao) {
-  const url = `https://avwx.rest/api/metar/${icao}?token=${AVWX_TOKEN}`;
-  
+  // 1. Пытаемся через AVWX
   try {
+    const url = `https://avwx.rest/api/metar/${icao}?token=${AVWX_TOKEN}`;
     console.log(`📡 Запрос к AVWX: ${icao}`);
     const response = await fetch(url);
-    
-    if (!response.ok) {
-      if (response.status === 401) throw new Error('Неверный API-токен AVWX');
-      if (response.status === 404) throw new Error('Аэропорт не найден');
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
-    console.log('📡 Ответ AVWX:', data);
-    
-    if (!data.raw) throw new Error('METAR не найден в ответе');
-    return data.raw;
-    
+    if (data.raw) {
+      console.log('✅ AVWX успешно вернул METAR');
+      return data.raw;
+    }
+    throw new Error('Нет поля raw в ответе AVWX');
   } catch (err) {
-    console.error('❌ Ошибка получения METAR через AVWX:', err);
-    throw new Error('Не удалось получить METAR. Попробуйте позже или введите вручную.');
+    console.warn('⚠️ AVWX не сработал, пробуем резерв:', err.message);
+    
+    // 2. Резерв: AviationWeather.gov (без токена)
+    try {
+      const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw`;
+      console.log(`📡 Запрос к AviationWeather.gov: ${icao}`);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const text = await response.text();
+      const lines = text.trim().split('\n');
+      if (lines.length === 0 || !lines[0]) throw new Error('Пустой ответ');
+      console.log('✅ AviationWeather.gov успешно вернул METAR');
+      return lines[0];
+    } catch (err2) {
+      console.error('❌ Все источники METAR недоступны:', err2);
+      throw new Error('Не удалось получить METAR. Попробуйте позже или введите вручную.');
+    }
   }
 }
 
