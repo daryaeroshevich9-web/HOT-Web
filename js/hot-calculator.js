@@ -12,7 +12,7 @@ async function loadTable(fluidType) {
   return data;
 }
 
-export async function calculateHOT(fluidType, temperature, intensity, context, events, dayNight, tableType = 'hot') {
+export async function calculateHOT(fluidType, temperature, intensity, context, events, dayNight, tableType = 'hot', subtype = null) {
   let fileId = fluidType;
   if (tableType !== 'hot') {
     fileId = tableType;
@@ -27,28 +27,29 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [] };
   }
 
-  // 2. Строим контекст для движка правил
+  // 2. Строим контекст для движка правил, добавляем subtype если передан
   const ruleContext = {
     temp: temperature,
     intensity: intensity,
     event_index: null,
     ...context
   };
+  if (subtype) {
+    ruleContext.fluid_type = subtype;
+  }
 
-  // 3. Применяем event_index_rules
   let eventIndex = null;
   let finalResult = null;
 
+  // 3. Применяем event_index_rules
   if (event_index_rules && event_index_rules.length > 0) {
     const ruleResult = applyRules(event_index_rules, ruleContext, events);
     if (ruleResult.matched) {
       if (ruleResult.result !== null) {
-        // Если результат содержит "CAUTION" или ":", считаем его финальным
         const resultStr = ruleResult.result;
         if (resultStr.includes('CAUTION') || resultStr.includes(':')) {
           return { hot: resultStr, at_pg: null, at_eg: null, warnings: [] };
         } else {
-          // Иначе это специальный ключ (например, "SNOWFALL INTENSITIES")
           eventIndex = resultStr;
         }
       } else if (ruleResult.event_index_override !== null) {
@@ -57,7 +58,7 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     }
   }
 
-  // Если индекс не определён правилами, ищем по event_index
+  // 4. Если индекс не определён правилами, ищем по event_index
   if (eventIndex === null) {
     if (event_index && event_index.length > 0) {
       const foundIndex = findEventIndex(events, event_index);
@@ -67,21 +68,18 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     }
   }
 
-  // Если всё ещё null – нет подходящего столбца
   if (eventIndex === null) {
     return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [] };
   }
 
-  // 4. Применяем основные rules
+  // 5. Применяем основные rules
   if (rules && rules.length > 0) {
-    // Передаём текущий eventIndex в контекст (может быть строкой)
     ruleContext.event_index = eventIndex;
     const ruleResult2 = applyRules(rules, ruleContext, events);
     if (ruleResult2.matched) {
       if (ruleResult2.result !== null) {
         finalResult = ruleResult2.result;
       } else if (ruleResult2.event_index_override !== null) {
-        // Если правила переопределили индекс, обновляем его
         eventIndex = ruleResult2.event_index_override;
       }
     }
@@ -91,11 +89,8 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     return { hot: finalResult, at_pg: null, at_eg: null, warnings: [] };
   }
 
-  // 5. Извлекаем значение из таблицы
-  // Убедимся, что eventIndex - число
+  // 6. Извлекаем значение из таблицы
   if (typeof eventIndex !== 'number') {
-    // Если это строка (например, "SNOWFALL INTENSITIES") и правила не переопределили,
-    // то данных нет
     return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [] };
   }
 
@@ -117,6 +112,6 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
   return { hot: result, at_pg: null, at_eg: null, warnings: [] };
 }
 
-export async function calculateAT(fluidType, temperature, intensity, context, events, dayNight, atType) {
-  return await calculateHOT(fluidType, temperature, intensity, context, events, dayNight, atType);
+export async function calculateAT(fluidType, temperature, intensity, context, events, dayNight, atType, subtype = null) {
+  return await calculateHOT(fluidType, temperature, intensity, context, events, dayNight, atType, subtype);
 }
