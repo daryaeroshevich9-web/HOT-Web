@@ -6,35 +6,32 @@ import { calculateHOT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
+// Список жидкостей: теперь Active Frost разделён на подтипы
 const FLUID_TYPES = [
-  { id: 'active_frost', label: 'Active Frost' },
-  { id: 'type_i', label: 'Type I Generic' },
-  { id: 'type_ii_generic', label: 'Type II Generic' },
-  { id: 'type_ii_cryotech', label: 'Type II Cryotech' },
-  { id: 'type_ii_kilfrost', label: 'Type II Kilfrost' },
-  { id: 'type_iv_generic', label: 'Type IV Generic' },
-  { id: 'type_iv_aviafluid', label: 'Type IV Aviafluid' },
-  { id: 'type_iv_nordix', label: 'Type IV Nordix' }
+  { id: 'type_i', label: 'Type I Generic', subtype: null },
+  { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
+  { id: 'type_ii_cryotech', label: 'Type II Cryotech', subtype: null },
+  { id: 'type_ii_kilfrost', label: 'Type II Kilfrost', subtype: null },
+  { id: 'type_iv_generic', label: 'Type IV Generic', subtype: null },
+  { id: 'type_iv_aviafluid', label: 'Type IV Aviafluid', subtype: null },
+  { id: 'type_iv_nordix', label: 'Type IV Nordix', subtype: null },
+  // Active Frost с подтипами — все используют один файл active_frost.json
+  { id: 'active_frost', label: 'Active Frost (Type I)', subtype: 'I' },
+  { id: 'active_frost', label: 'Active Frost (Type II)', subtype: 'II' },
+  { id: 'active_frost', label: 'Active Frost (Type IV)', subtype: 'IV' }
 ];
 
-// Глобальные переменные для загруженных данных
 let metarEvents = null;
 
 async function init() {
   console.log('🚀 init() вызван');
   try {
-    // Загружаем аэропорты
     const airports = await loadJSON('data/airports.json');
     console.log('✅ Аэропорты загружены:', airports);
     populateAirportSelect(airports);
-
-    // Загружаем список жидкостей
     populateFluidSelect(FLUID_TYPES);
-
-    // Загружаем metar_events.json один раз при старте
     metarEvents = await loadJSON('data/config/metar_events.json');
     console.log('✅ metar_events загружены');
-
     document.getElementById('calculateBtn').addEventListener('click', onCalculate);
     console.log('✅ Обработчик кнопки добавлен');
   } catch (err) {
@@ -60,17 +57,26 @@ function populateFluidSelect(list) {
   list.forEach(f => {
     const opt = document.createElement('option');
     opt.value = f.id;
-    opt.textContent = f.label;
+    // Если есть подтип, добавляем его в отображение
+    const label = f.subtype ? `${f.label}` : f.label;
+    opt.textContent = label;
+    // Сохраняем subtype как data-атрибут
+    if (f.subtype) {
+      opt.dataset.subtype = f.subtype;
+    }
     sel.appendChild(opt);
   });
 }
 
 async function onCalculate() {
   const airport = document.getElementById('airport').value;
-  const fluid = document.getElementById('fluid').value;
+  const fluidSelect = document.getElementById('fluid');
+  const fluid = fluidSelect.value;
+  // Получаем subtype из выбранного option (если есть)
+  const selectedOption = fluidSelect.options[fluidSelect.selectedIndex];
+  const subtype = selectedOption?.dataset?.subtype || null;
+
   const dayNight = document.querySelector('input[name="daynight"]:checked').value;
-  
-  // Безопасное получение ручного METAR
   const manualInput = document.getElementById('manualMetar');
   const manualMetar = manualInput ? manualInput.value.trim() : '';
 
@@ -94,7 +100,6 @@ async function onCalculate() {
       console.log('📡 Получен METAR:', metar);
     }
 
-    // Передаём список разрешённых событий из metar_events.json
     const allowedEvents = metarEvents ? metarEvents.metar_events || [] : [];
     const parsed = parseMetar(metar, allowedEvents);
     console.log('🔍 Распарсено:', parsed);
@@ -106,7 +111,8 @@ async function onCalculate() {
     const context = await buildContext(parsed.events, parsed.temperature, parsed.visibility, dayNight);
     console.log('🧠 Контекст:', context);
 
-    const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight);
+    // Передаём subtype для Active Frost
+    const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'hot', subtype);
     console.log('📊 Результат HOT:', hotResult);
 
     renderResult(parsed, context, hotResult, metar);
@@ -120,7 +126,6 @@ async function onCalculate() {
 }
 
 async function fetchMetar(icao) {
-  // Используем corsproxy.io
   const proxy = 'https://corsproxy.io/?';
   const target = `https://www.ogimet.com/cgi-bin/getmetar?icao=${icao}&begin=${getCurrentHour()}&header=yes`;
   const url = proxy + encodeURIComponent(target);
@@ -151,6 +156,15 @@ function getCurrentHour() {
   return `${year}${month}${day}${hour}00`;
 }
 
+function getHotStatus(hotValue) {
+  if (typeof hotValue === 'object') return 'success';
+  const str = String(hotValue);
+  if (str.includes('CAUTION')) return 'danger';
+  if (str.includes('No snow') || str.includes('CAVOK')) return 'warning';
+  if (str.includes(':')) return 'success';
+  return 'warning';
+}
+
 function renderResult(parsed, context, hotResult, rawMetar) {
   const div = document.getElementById('result');
   div.style.display = 'block';
@@ -162,14 +176,17 @@ function renderResult(parsed, context, hotResult, rawMetar) {
     <p><strong>Интенсивность:</strong> ${context.intensity}</p>`;
 
   const hot = hotResult.hot;
+  const status = getHotStatus(hot);
+
   if (typeof hot === 'object') {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>`;
     for (const [conc, time] of Object.entries(hot)) {
-      html += `<div class="concentration-item"><strong>${conc}:</strong> ${time}</div>`;
+      const concStatus = getHotStatus(time);
+      html += `<div class="concentration-item status-${concStatus}"><strong>${conc}:</strong> ${time}</div>`;
     }
   } else {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>
-      <div class="hot-value">${hot}</div>`;
+      <div class="hot-value status-${status}">${hot}</div>`;
   }
 
   if (hotResult.warnings && hotResult.warnings.length > 0) {
