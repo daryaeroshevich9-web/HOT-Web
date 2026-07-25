@@ -6,7 +6,10 @@ import { calculateHOT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
-// Список жидкостей: теперь Active Frost разделён на подтипы
+// AVWX API токен
+const AVWX_TOKEN = 'y8jsHvPSDVHkuwzlJg_xJGePHZGyl04aM6155VY8utU';
+
+// Список жидкостей (Active Frost разделён на подтипы)
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
   { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
@@ -15,7 +18,6 @@ const FLUID_TYPES = [
   { id: 'type_iv_generic', label: 'Type IV Generic', subtype: null },
   { id: 'type_iv_aviafluid', label: 'Type IV Aviafluid', subtype: null },
   { id: 'type_iv_nordix', label: 'Type IV Nordix', subtype: null },
-  // Active Frost с подтипами — все используют один файл active_frost.json
   { id: 'active_frost', label: 'Active Frost (Type I)', subtype: 'I' },
   { id: 'active_frost', label: 'Active Frost (Type II)', subtype: 'II' },
   { id: 'active_frost', label: 'Active Frost (Type IV)', subtype: 'IV' }
@@ -57,10 +59,7 @@ function populateFluidSelect(list) {
   list.forEach(f => {
     const opt = document.createElement('option');
     opt.value = f.id;
-    // Если есть подтип, добавляем его в отображение
-    const label = f.subtype ? `${f.label}` : f.label;
-    opt.textContent = label;
-    // Сохраняем subtype как data-атрибут
+    opt.textContent = f.label;
     if (f.subtype) {
       opt.dataset.subtype = f.subtype;
     }
@@ -72,7 +71,6 @@ async function onCalculate() {
   const airport = document.getElementById('airport').value;
   const fluidSelect = document.getElementById('fluid');
   const fluid = fluidSelect.value;
-  // Получаем subtype из выбранного option (если есть)
   const selectedOption = fluidSelect.options[fluidSelect.selectedIndex];
   const subtype = selectedOption?.dataset?.subtype || null;
 
@@ -111,7 +109,6 @@ async function onCalculate() {
     const context = await buildContext(parsed.events, parsed.temperature, parsed.visibility, dayNight);
     console.log('🧠 Контекст:', context);
 
-    // Передаём subtype для Active Frost
     const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'hot', subtype);
     console.log('📊 Результат HOT:', hotResult);
 
@@ -125,35 +122,30 @@ async function onCalculate() {
   }
 }
 
+// ---- НОВАЯ ФУНКЦИЯ ДЛЯ AVWX ----
 async function fetchMetar(icao) {
-  const proxy = 'https://corsproxy.io/?';
-  const target = `https://www.ogimet.com/cgi-bin/getmetar?icao=${icao}&begin=${getCurrentHour()}&header=yes`;
-  const url = proxy + encodeURIComponent(target);
-
+  const url = `https://avwx.rest/api/metar/${icao}?token=${AVWX_TOKEN}`;
+  
   try {
+    console.log(`📡 Запрос к AVWX: ${icao}`);
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const text = await response.text();
-    const lines = text.split('\n').filter(line => line.trim() !== '');
-    if (lines.length < 2) throw new Error('Нет данных METAR');
-    const lastLine = lines[lines.length - 1];
-    const parts = lastLine.split(',');
-    const metar = parts[parts.length - 1].trim();
-    if (!metar || metar.length < 10) throw new Error('Неверный формат METAR');
-    return metar;
+    
+    if (!response.ok) {
+      if (response.status === 401) throw new Error('Неверный API-токен AVWX');
+      if (response.status === 404) throw new Error('Аэропорт не найден');
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    console.log('📡 Ответ AVWX:', data);
+    
+    if (!data.raw) throw new Error('METAR не найден в ответе');
+    return data.raw;
+    
   } catch (err) {
-    console.error('Ошибка получения METAR:', err);
+    console.error('❌ Ошибка получения METAR через AVWX:', err);
     throw new Error('Не удалось получить METAR. Попробуйте позже или введите вручную.');
   }
-}
-
-function getCurrentHour() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  const hour = String(now.getHours()).padStart(2, '0');
-  return `${year}${month}${day}${hour}00`;
 }
 
 function getHotStatus(hotValue) {
@@ -190,7 +182,7 @@ function renderResult(parsed, context, hotResult, rawMetar) {
   }
 
   if (hotResult.warnings && hotResult.warnings.length > 0) {
-    html += `<div class="warning">${hotResult.warnings.join('<br>')}</div>`;
+    html += `<div class="warning-box">${hotResult.warnings.join('<br>')}</div>`;
   }
 
   html += `<button onclick="document.getElementById('metarRaw').classList.toggle('show')">Показать METAR</button>
