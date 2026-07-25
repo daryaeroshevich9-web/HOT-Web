@@ -1,7 +1,8 @@
 // js/context-builder.js
 import { loadJSON } from './utils.js';
 
-// Загружаем metar_events.json один раз
+// Загружаем metar_events.json один раз (нужно для получения списка событий,
+// но здесь мы его не используем, оставляем для совместимости)
 let metarEvents = null;
 
 async function loadMetarEvents() {
@@ -34,17 +35,11 @@ export function getSnowIntensity(events, temperature, visibility, dayNight) {
     return 'Moderate';
   }
 
-  // Таблица интенсивности (TABLE 1) — упрощённая версия.
-  // В реальности нужно загружать таблицу из JSON, но пока захардкодим основные правила.
-  // Более точно: берём из документации SAE.
-  // Здесь даю примерную логику, вы можете уточнить по вашим таблицам.
+  // Таблица интенсивности (TABLE 1) — исправленная версия
   let intensity = 'Moderate'; // по умолчанию
 
-  // Порог температуры -1°C
-  const isCold = temperature <= -1;
-
-  // Определяем по видимости
-  if (vis > 9999) {
+  // Исправлено: видимость >= 9999 даёт Very Light
+  if (vis >= 9999) {
     intensity = 'Very Light';
   } else if (vis > 5000) {
     intensity = 'Light';
@@ -53,7 +48,7 @@ export function getSnowIntensity(events, temperature, visibility, dayNight) {
   } else if (vis > 800) {
     intensity = 'Heavy';
   } else {
-    intensity = 'Heavy'; // очень плохая видимость
+    intensity = 'Heavy';
   }
 
   // Корректировка для ночи: по таблице ночью интенсивность может быть выше при той же видимости.
@@ -67,7 +62,7 @@ export function getSnowIntensity(events, temperature, visibility, dayNight) {
  */
 export async function buildContext(events, temperature, visibility, dayNight) {
   const meta = await loadMetarEvents();
-  const snowCodes = ['SN', 'SG', 'GS']; // из meta можно взять, но пока захардкодим
+  const snowCodes = ['SN', 'SG', 'GS'];
   const obscurationCodes = ['FG', 'BR', 'SA', 'DU', 'HZ', 'FU', 'VA'];
   const fzfgCodes = ['FZFG', 'FZBR'];
   const note6Triggers = ['SNRA', 'SNDZ', 'RASN', 'DZSN'];
@@ -94,6 +89,5 @@ export async function buildContext(events, temperature, visibility, dayNight) {
     note_6,
     snow_fzfg,
     snowfall_and_obscuration,
-    // Дополнительно можно добавить другие флаги по необходимости
   };
 }
