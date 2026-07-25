@@ -6,9 +6,7 @@ import { calculateHOT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
-// НОВЫЙ AVWX API токен (обновлён 25.07.2026)
-const AVWX_TOKEN = '-Ggd_6Ucp33yRMRav1gpwZmdC5BK1fNs9HwoyAYtWvM';
-
+// Список жидкостей (Active Frost разделён на подтипы)
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
   { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
@@ -121,46 +119,47 @@ async function onCalculate() {
   }
 }
 
-// ---- ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (AVWX + резерв) ----
+// ===== ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (NOAA, без токена) =====
 async function fetchMetar(icao) {
-  // 1. Пытаемся через AVWX с новым токеном
+  // Используем официальный API National Weather Service (NOAA)
+  // Документация: https://aviationweather.gov/data/api/
+  const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw`;
+  console.log(`📡 Запрос к AviationWeather.gov: ${icao}`);
+
   try {
-    const url = `https://avwx.rest/api/metar/${icao}?token=${AVWX_TOKEN}`;
-    console.log(`📡 Запрос к AVWX: ${icao}`);
     const response = await fetch(url);
-    
     if (!response.ok) {
-      // Если ошибка — переключаемся на резерв
-      console.warn(`⚠️ AVWX вернул ошибку ${response.status}, пробуем резерв.`);
-      throw new Error(`AVWX error: ${response.status}`);
+      // Если ответ не 200, пробуем прочитать текст ошибки
+      let errorText = '';
+      try {
+        errorText = await response.text();
+      } catch (_) {}
+      throw new Error(`HTTP ${response.status}${errorText ? ': ' + errorText : ''}`);
     }
-    
-    const data = await response.json();
-    if (data.raw) {
-      console.log('✅ AVWX успешно вернул METAR');
-      return data.raw;
+
+    const text = await response.text();
+    // Ответ может содержать несколько строк (если запрошено несколько ICAO)
+    // Нам нужна первая непустая строка
+    const lines = text.trim().split('\n').filter(line => line.trim() !== '');
+    if (lines.length === 0) {
+      throw new Error('Пустой ответ от сервера');
     }
-    throw new Error('Нет поля raw в ответе AVWX');
+
+    const metar = lines[0].trim();
+    if (metar.length < 10) {
+      throw new Error('Полученная строка слишком короткая для METAR');
+    }
+
+    console.log('✅ METAR успешно получен от AviationWeather.gov');
+    return metar;
   } catch (err) {
-    console.warn('⚠️ AVWX не сработал, пробуем резерв:', err.message);
-    
-    // 2. Резерв: AviationWeather.gov (без токена)
-    try {
-      const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw`;
-      console.log(`📡 Запрос к AviationWeather.gov: ${icao}`);
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const text = await response.text();
-      const lines = text.trim().split('\n');
-      if (lines.length === 0 || !lines[0]) throw new Error('Пустой ответ');
-      console.log('✅ AviationWeather.gov успешно вернул METAR');
-      return lines[0];
-    } catch (err2) {
-      console.error('❌ Все источники METAR недоступны:', err2);
-      throw new Error('Не удалось получить METAR. Попробуйте позже или введите вручную.');
-    }
+    console.error('❌ Ошибка получения METAR от NOAA:', err);
+    // Пробрасываем понятное сообщение пользователю
+    throw new Error(`Не удалось получить METAR: ${err.message}. Попробуйте ввести METAR вручную.`);
   }
 }
+
+// ===== Вспомогательные функции =====
 
 function getHotStatus(hotValue) {
   if (typeof hotValue === 'object') return 'success';
