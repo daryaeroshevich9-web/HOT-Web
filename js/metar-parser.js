@@ -35,14 +35,16 @@ export function parseMetar(metar, allowedEvents = []) {
   const eventRegex = /([+-]?[A-Z]{2,5})/g;
   const allMatches = [...raw.matchAll(eventRegex)].map(m => m[1]);
 
-  // Исключаем заведомо не-события (даже если они есть в списке, их не должно быть)
-  const exclude = ['VRB', 'NOSIG', 'CAVOK', 'FEW', 'SCT', 'BKN', 'OVC', 'NSC', 'SKC'];
+  // Исключаем заведомо не-события
+  const exclude = ['VRB', 'NOSIG', 'CAVOK', 'FEW', 'SCT', 'BKN', 'OVC', 'NSC', 'SKC', 'MPS', 'KPH'];
   const candidates = allMatches.filter(code => !exclude.includes(code));
 
-  // Фильтруем по разрешённому списку, если он передан
+  // Фильтруем по разрешённому списку, используя гибкое сравнение
   let events = candidates;
   if (allowedEvents && allowedEvents.length > 0) {
-    events = candidates.filter(code => allowedEvents.some(ae => ae === code));
+    events = candidates.filter(code => 
+      allowedEvents.some(ae => code.includes(ae) || ae.includes(code))
+    );
   }
 
   return { icao, temperature, visibility, events, raw };
