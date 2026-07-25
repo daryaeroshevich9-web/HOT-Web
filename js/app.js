@@ -6,8 +6,8 @@ import { calculateHOT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
-// AVWX API токен
-const AVWX_TOKEN = 'y8jsHvPSDVHkuwzlJg_xJGePHZGyl04aM6155VY8utU';
+// НОВЫЙ AVWX API токен (обновлён 25.07.2026)
+const AVWX_TOKEN = '-Ggd_6Ucp33yRMRav1gpwZmdC5BK1fNs9HwoyAYtWvM';
 
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
@@ -121,14 +121,20 @@ async function onCalculate() {
   }
 }
 
-// === НОВАЯ ФУНКЦИЯ FETCH METAR (AVWX + резерв) ===
+// ---- ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (AVWX + резерв) ----
 async function fetchMetar(icao) {
-  // 1. Пытаемся через AVWX
+  // 1. Пытаемся через AVWX с новым токеном
   try {
     const url = `https://avwx.rest/api/metar/${icao}?token=${AVWX_TOKEN}`;
     console.log(`📡 Запрос к AVWX: ${icao}`);
     const response = await fetch(url);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    
+    if (!response.ok) {
+      // Если ошибка — переключаемся на резерв
+      console.warn(`⚠️ AVWX вернул ошибку ${response.status}, пробуем резерв.`);
+      throw new Error(`AVWX error: ${response.status}`);
+    }
+    
     const data = await response.json();
     if (data.raw) {
       console.log('✅ AVWX успешно вернул METAR');
