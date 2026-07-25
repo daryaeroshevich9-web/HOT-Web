@@ -58,7 +58,10 @@ async function onCalculate() {
   const airport = document.getElementById('airport').value;
   const fluid = document.getElementById('fluid').value;
   const dayNight = document.querySelector('input[name="daynight"]:checked').value;
-  const manualMetar = document.getElementById('manualMetar').value.trim();
+  
+  // Безопасное получение ручного METAR
+  const manualInput = document.getElementById('manualMetar');
+  const manualMetar = manualInput ? manualInput.value.trim() : '';
 
   const resultDiv = document.getElementById('result');
   const errorDiv = document.getElementById('error');
@@ -99,7 +102,8 @@ async function onCalculate() {
 }
 
 async function fetchMetar(icao) {
-  const proxy = 'https://api.allorigins.win/raw?url=';
+  // Используем corsproxy.io (первый вариант)
+  const proxy = 'https://corsproxy.io/?';
   const target = `https://www.ogimet.com/cgi-bin/getmetar?icao=${icao}&begin=${getCurrentHour()}&header=yes`;
   const url = proxy + encodeURIComponent(target);
 
@@ -158,6 +162,9 @@ function renderResult(parsed, context, hotResult, rawMetar) {
     <pre id="metarRaw" class="metar-raw">${rawMetar}</pre>`;
 
   div.innerHTML = html;
+}
+
+init();
 }
 
 init();
