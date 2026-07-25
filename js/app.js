@@ -6,7 +6,6 @@ import { calculateHOT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
-// Список жидкостей (Active Frost разделён на подтипы)
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
   { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
@@ -119,9 +118,10 @@ async function onCalculate() {
   }
 }
 
-// ===== ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (VATSIM, без токена) =====
+// ===== ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (VATSIM, БЕЗ ТОКЕНА) =====
 async function fetchMetar(icao) {
-  // Используем VATSIM METAR сервис
+  // Используем открытый VATSIM METAR-сервис
+  // Документация: https://metar.vatsim.net/
   const url = `https://metar.vatsim.net/metar.php?id=${icao}`;
   console.log(`📡 Запрос к VATSIM: ${icao}`);
 
@@ -129,17 +129,15 @@ async function fetchMetar(icao) {
     const response = await fetch(url);
     if (!response.ok) {
       let errorText = '';
-      try {
-        errorText = await response.text();
-      } catch (_) {}
+      try { errorText = await response.text(); } catch (_) {}
       throw new Error(`HTTP ${response.status}${errorText ? ': ' + errorText : ''}`);
     }
 
     const text = await response.text();
-    // Ответ может содержать несколько строк — берём первую непустую
+    // Ответ может содержать несколько METAR-строк или пустую строку
     const lines = text.trim().split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) {
-      throw new Error('Пустой ответ от сервера');
+      throw new Error('Пустой ответ от VATSIM');
     }
 
     const metar = lines[0].trim();
@@ -151,8 +149,6 @@ async function fetchMetar(icao) {
     return metar;
   } catch (err) {
     console.error('❌ Ошибка получения METAR от VATSIM:', err);
-    // Если VATSIM не сработал, можно попробовать резервный источник (например, другой прокси)
-    // Но пока просто выбрасываем ошибку с понятным сообщением
     throw new Error(`Не удалось получить METAR: ${err.message}. Попробуйте ввести METAR вручную.`);
   }
 }
