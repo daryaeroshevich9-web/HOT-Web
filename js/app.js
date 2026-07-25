@@ -22,21 +22,18 @@ const FLUID_TYPES = [
 
 let metarEvents = null;
 
-async function init() {
-  console.log('🚀 init() вызван');
-  try {
-    const airports = await loadJSON('data/airports.json');
-    console.log('✅ Аэропорты загружены:', airports);
-    populateAirportSelect(airports);
-    populateFluidSelect(FLUID_TYPES);
-    metarEvents = await loadJSON('data/config/metar_events.json');
-    console.log('✅ metar_events загружены');
-    document.getElementById('calculateBtn').addEventListener('click', onCalculate);
-    console.log('✅ Обработчик кнопки добавлен');
-  } catch (err) {
-    console.error('❌ Ошибка инициализации:', err);
-    document.getElementById('error').textContent = 'Ошибка загрузки данных: ' + err.message;
-  }
+async function fetchMetar(icao) {
+  const url = `https://metar.vatsim.net/metar.php?id=${icao}`;
+  console.log(`📡 Запрос к VATSIM: ${icao}`);
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const text = await response.text();
+  // Ответ может содержать несколько строк — берём первую
+  const lines = text.trim().split('\n');
+  if (lines.length === 0) throw new Error('Пустой ответ');
+  console.log('✅ METAR получен от VATSIM');
+  return lines[0].trim();
+}
 }
 
 function populateAirportSelect(list) {
