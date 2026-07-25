@@ -17,13 +17,24 @@ const FLUID_TYPES = [
   { id: 'type_iv_nordix', label: 'Type IV Nordix' }
 ];
 
+// Глобальные переменные для загруженных данных
+let metarEvents = null;
+
 async function init() {
   console.log('🚀 init() вызван');
   try {
+    // Загружаем аэропорты
     const airports = await loadJSON('data/airports.json');
     console.log('✅ Аэропорты загружены:', airports);
     populateAirportSelect(airports);
+
+    // Загружаем список жидкостей
     populateFluidSelect(FLUID_TYPES);
+
+    // Загружаем metar_events.json один раз при старте
+    metarEvents = await loadJSON('data/config/metar_events.json');
+    console.log('✅ metar_events загружены');
+
     document.getElementById('calculateBtn').addEventListener('click', onCalculate);
     console.log('✅ Обработчик кнопки добавлен');
   } catch (err) {
@@ -83,13 +94,20 @@ async function onCalculate() {
       console.log('📡 Получен METAR:', metar);
     }
 
-    const parsed = parseMetar(metar);
+    // Передаём список разрешённых событий из metar_events.json
+    const allowedEvents = metarEvents ? metarEvents.metar_events || [] : [];
+    const parsed = parseMetar(metar, allowedEvents);
+    console.log('🔍 Распарсено:', parsed);
+
     if (!parsed.temperature) {
       throw new Error('Не удалось определить температуру в METAR');
     }
 
     const context = await buildContext(parsed.events, parsed.temperature, parsed.visibility, dayNight);
+    console.log('🧠 Контекст:', context);
+
     const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight);
+    console.log('📊 Результат HOT:', hotResult);
 
     renderResult(parsed, context, hotResult, metar);
   } catch (err) {
@@ -102,7 +120,7 @@ async function onCalculate() {
 }
 
 async function fetchMetar(icao) {
-  // Используем corsproxy.io (первый вариант)
+  // Используем corsproxy.io
   const proxy = 'https://corsproxy.io/?';
   const target = `https://www.ogimet.com/cgi-bin/getmetar?icao=${icao}&begin=${getCurrentHour()}&header=yes`;
   const url = proxy + encodeURIComponent(target);
@@ -162,9 +180,6 @@ function renderResult(parsed, context, hotResult, rawMetar) {
     <pre id="metarRaw" class="metar-raw">${rawMetar}</pre>`;
 
   div.innerHTML = html;
-}
-
-init();
 }
 
 init();
