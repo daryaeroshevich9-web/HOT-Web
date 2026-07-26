@@ -47,7 +47,7 @@
     /* Светлый placeholder для обоих текстовых полей */
     #icaoInput::placeholder,
     #manualMetar::placeholder {
-      color: #adb5bd; /* более светлый, чем стандартный */
+      color: #adb5bd;
       opacity: 1;
     }
     button {
@@ -72,7 +72,6 @@
       border-radius: 8px;
       display: none;
     }
-    /* Уменьшенные отступы в результатах */
     .result p, .result h3 {
       margin: 6px 0;
     }
@@ -139,10 +138,10 @@
   <h1>🛫 HOT BOT — Расчёт времени защитного действия</h1>
   <p>Введите ICAO-код аэропорта, выберите жидкость и время суток, затем нажмите «Рассчитать».</p>
 
-  <!-- Поле ввода ICAO -->
+  <!-- Поле ввода ICAO (пустое по умолчанию) -->
   <div class="form-group">
     <label for="icaoInput">Код аэропорта (ICAO)</label>
-    <input type="text" id="icaoInput" placeholder="Введите код аэропорта" value="UUEE">
+    <input type="text" id="icaoInput" placeholder="Введите код аэропорта">
   </div>
 
   <!-- Жидкость -->
