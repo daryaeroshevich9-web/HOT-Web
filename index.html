@@ -44,6 +44,11 @@
       border: 1px solid #ced4da;
       background: white;
     }
+    /* Светлый placeholder для поля METAR */
+    #manualMetar::placeholder {
+      color: #adb5bd; /* более светлый, чем стандартный */
+      opacity: 1;
+    }
     button {
       background: #0d6efd;
       color: white;
@@ -65,6 +70,30 @@
       background: #f8f9fa;
       border-radius: 8px;
       display: none;
+    }
+    /* Уменьшенные отступы в результатах */
+    .result p, .result h3 {
+      margin: 6px 0;
+    }
+    .result .concentration-item {
+      display: inline-block; /* чтобы элементы шли в строку */
+      margin: 4px 20px 4px 0; /* увеличен правый отступ между ячейками */
+      padding: 4px 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .result .concentration-item .status-success {
+      color: #0a5e3a;
+      background: #d1fae5;
+    }
+    .result .concentration-item .status-danger {
+      color: #721c24;
+      background: #f8d7da;
+    }
+    .result .concentration-item .status-warning {
+      color: #856404;
+      background: #fff3cd;
     }
     .spinner {
       display: none;
@@ -89,38 +118,6 @@
       display: none;
     }
     .metar-raw.show { display: block; }
-
-    /* ----- Цветовая индикация HOT ----- */
-    .status-success {
-      color: #0a5e3a;
-      background: #d1fae5;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .status-danger {
-      color: #721c24;
-      background: #f8d7da;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .status-warning {
-      color: #856404;
-      background: #fff3cd;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .concentration-item {
-      padding: 6px 12px;
-      border-radius: 6px;
-      margin: 4px 0;
-      font-weight: 500;
-    }
     .hot-value {
       font-size: 2.2em;
       display: inline-block;
@@ -139,18 +136,30 @@
 <body>
 <div class="container">
   <h1>🛫 HOT BOT — Расчёт времени защитного действия</h1>
-  <p>Выберите аэропорт, тип жидкости и время суток, затем нажмите «Рассчитать».</p>
+  <p>Введите ICAO-код аэропорта, выберите жидкость и время суток, затем нажмите «Рассчитать».</p>
 
-  <!-- Аэропорт -->
+  <!-- Поле ввода ICAO (вместо выпадающего списка) -->
   <div class="form-group">
-    <label for="airport">Аэропорт</label>
-    <select id="airport"></select>
+    <label for="icaoInput">Код аэропорта (ICAO)</label>
+    <input type="text" id="icaoInput" placeholder="Например, UUEE" value="UUEE">
   </div>
 
   <!-- Жидкость -->
   <div class="form-group">
     <label for="fluid">Тип жидкости</label>
-    <select id="fluid"></select>
+    <select id="fluid">
+      <option value="">— Выберите жидкость —</option>
+      <option value="type_i">Type I Generic</option>
+      <option value="type_ii_generic">Type II Generic</option>
+      <option value="type_ii_cryotech">Type II Cryotech</option>
+      <option value="type_ii_kilfrost">Type II Kilfrost</option>
+      <option value="type_iv_generic">Type IV Generic</option>
+      <option value="type_iv_aviafluid">Type IV Aviafluid</option>
+      <option value="type_iv_nordix">Type IV Nordix</option>
+      <option value="active_frost" data-subtype="I">Active Frost (Type I)</option>
+      <option value="active_frost" data-subtype="II">Active Frost (Type II)</option>
+      <option value="active_frost" data-subtype="IV">Active Frost (Type IV)</option>
+    </select>
   </div>
 
   <!-- День / Ночь -->
@@ -165,7 +174,7 @@
   <!-- Ручной ввод METAR (для теста) -->
   <div class="form-group">
     <label for="manualMetar">Или введите METAR вручную (для теста):</label>
-    <input type="text" id="manualMetar" placeholder="UUEE 251630Z 35003MPS 9999 -SN OVC011 M04/M07..." style="width:100%; padding:8px; border-radius:6px; border:1px solid #ced4da;">
+    <input type="text" id="manualMetar" placeholder="UUEE 251630Z 35003MPS 9999 -SN OVC011 M04/M07" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ced4da;">
   </div>
 
   <!-- Кнопка -->
