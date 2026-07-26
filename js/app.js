@@ -6,6 +6,7 @@ import { calculateHOT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
+// Список жидкостей (для информации, в селекте уже есть опции)
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
   { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
@@ -24,10 +25,7 @@ let metarEvents = null;
 async function init() {
   console.log('🚀 init() вызван');
   try {
-    const airports = await loadJSON('data/airports.json');
-    console.log('✅ Аэропорты загружены:', airports);
-    populateAirportSelect(airports);
-    populateFluidSelect(FLUID_TYPES);
+    // Загружаем только metar_events (список аэропортов больше не нужен)
     metarEvents = await loadJSON('data/config/metar_events.json');
     console.log('✅ metar_events загружены');
     document.getElementById('calculateBtn').addEventListener('click', onCalculate);
@@ -38,35 +36,22 @@ async function init() {
   }
 }
 
-function populateAirportSelect(list) {
-  const sel = document.getElementById('airport');
-  sel.innerHTML = '';
-  list.forEach(ap => {
-    const opt = document.createElement('option');
-    opt.value = ap.icao;
-    opt.textContent = `${ap.icao} — ${ap.name}`;
-    sel.appendChild(opt);
-  });
-}
-
-function populateFluidSelect(list) {
-  const sel = document.getElementById('fluid');
-  sel.innerHTML = '';
-  list.forEach(f => {
-    const opt = document.createElement('option');
-    opt.value = f.id;
-    opt.textContent = f.label;
-    if (f.subtype) {
-      opt.dataset.subtype = f.subtype;
-    }
-    sel.appendChild(opt);
-  });
-}
-
 async function onCalculate() {
-  const airport = document.getElementById('airport').value;
+  // 1. Получаем ICAO из поля ввода
+  const icaoInput = document.getElementById('icaoInput');
+  const airport = icaoInput.value.trim().toUpperCase();
+  if (!airport) {
+    document.getElementById('error').textContent = '❌ Введите код аэропорта (ICAO)';
+    return;
+  }
+
+  // 2. Получаем выбранную жидкость
   const fluidSelect = document.getElementById('fluid');
   const fluid = fluidSelect.value;
+  if (!fluid) {
+    document.getElementById('error').textContent = '❌ Выберите тип жидкости';
+    return;
+  }
   const selectedOption = fluidSelect.options[fluidSelect.selectedIndex];
   const subtype = selectedOption?.dataset?.subtype || null;
 
@@ -120,8 +105,6 @@ async function onCalculate() {
 
 // ===== ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (VATSIM, БЕЗ ТОКЕНА) =====
 async function fetchMetar(icao) {
-  // Используем открытый VATSIM METAR-сервис
-  // Документация: https://metar.vatsim.net/
   const url = `https://metar.vatsim.net/metar.php?id=${icao}`;
   console.log(`📡 Запрос к VATSIM: ${icao}`);
 
@@ -134,7 +117,6 @@ async function fetchMetar(icao) {
     }
 
     const text = await response.text();
-    // Ответ может содержать несколько METAR-строк или пустую строку
     const lines = text.trim().split('\n').filter(line => line.trim() !== '');
     if (lines.length === 0) {
       throw new Error('Пустой ответ от VATSIM');
@@ -181,7 +163,7 @@ function renderResult(parsed, context, hotResult, rawMetar) {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>`;
     for (const [conc, time] of Object.entries(hot)) {
       const concStatus = getHotStatus(time);
-      html += `<div class="concentration-item status-${concStatus}"><strong>${conc}:</strong> ${time}</div>`;
+      html += `<span class="concentration-item status-${concStatus}"><strong>${conc}:</strong> ${time}</span>`;
     }
   } else {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>
