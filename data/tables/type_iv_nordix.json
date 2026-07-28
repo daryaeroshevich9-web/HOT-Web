@@ -1,4 +1,5 @@
 {
+  "lout": -25.5,
   "temperature_bands": [
     { "min_inclusive": -3, "max_exclusive": 100 },
     { "min_inclusive": -8, "max_exclusive": -3 },
