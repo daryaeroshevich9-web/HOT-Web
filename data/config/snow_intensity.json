@@ -1,0 +1,13 @@
+{
+  "ranges": [
+    { "min": 0, "max": 600, "day_cold": "Heavy", "day_warm": "Heavy", "night_cold": "Heavy", "night_warm": "Heavy" },
+    { "min": 700, "max": 1000, "day_cold": "Moderate", "day_warm": "Heavy", "night_cold": "Heavy", "night_warm": "Heavy" },
+    { "min": 1100, "max": 1400, "day_cold": "Moderate", "day_warm": "Moderate", "night_cold": "Moderate", "night_warm": "Heavy" },
+    { "min": 1500, "max": 1800, "day_cold": "Light", "day_warm": "Light", "night_cold": "Moderate", "night_warm": "Moderate" },
+    { "min": 1900, "max": 2200, "day_cold": "Light", "day_warm": "Light", "night_cold": "Moderate", "night_warm": "Moderate" },
+    { "min": 2300, "max": 2600, "day_cold": "Light", "day_warm": "Light", "night_cold": "Moderate", "night_warm": "Moderate" },
+    { "min": 2700, "max": 3000, "day_cold": "Very Light", "day_warm": "Light", "night_cold": "Light", "night_warm": "Light" },
+    { "min": 3100, "max": 3600, "day_cold": "Very Light", "day_warm": "Very Light", "night_cold": "Light", "night_warm": "Light" },
+    { "min": 3700, "max": 9999, "day_cold": "Very Light", "day_warm": "Very Light", "night_cold": "Very Light", "night_warm": "Very Light" }
+  ]
+}
