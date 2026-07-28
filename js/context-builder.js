@@ -1,7 +1,9 @@
 // js/context-builder.js
 import { loadJSON } from './utils.js';
 
+// Кеш для таблицы интенсивности и мета-данных
 let metarEvents = null;
+let snowIntensityTable = null;
 
 async function loadMetarEvents() {
   if (!metarEvents) {
@@ -10,42 +12,60 @@ async function loadMetarEvents() {
   return metarEvents;
 }
 
+async function loadSnowIntensityTable() {
+  if (!snowIntensityTable) {
+    snowIntensityTable = await loadJSON('data/config/snow_intensity.json');
+  }
+  return snowIntensityTable;
+}
+
 /**
- * Определяет интенсивность снегопада по видимости (TABLE 1)
+ * Определяет интенсивность снегопада по полной таблице (TABLE 1)
+ * Учитывает видимость, температуру и время суток.
  * Возвращает: "Very Light", "Light", "Moderate", "Heavy" или "No snow in METAR"
  */
-export function getSnowIntensity(events, temperature, visibility, dayNight) {
+export async function getSnowIntensity(events, temperature, visibility, dayNight) {
+  // Проверяем наличие снега (SN, SG, GS)
   const snowCodes = ['SN', 'SG', 'GS'];
   const hasSnow = events.some(e => snowCodes.some(s => e.includes(s)));
   if (!hasSnow) {
     return 'No snow in METAR';
   }
 
+  // Определяем видимость
   let vis;
   if (visibility === 'CAVOK') {
     vis = 9999;
   } else if (typeof visibility === 'number') {
     vis = visibility;
   } else {
+    // Если видимость не удалось определить — возвращаем Moderate как компромисс
     return 'Moderate';
   }
 
-  // Уточнённые диапазоны интенсивности по видимости
-  let intensity = 'Moderate';
-  if (vis >= 9999) {
-    intensity = 'Very Light';
-  } else if (vis >= 5000) {
-    intensity = 'Light';
-  } else if (vis >= 2000) {
-    intensity = 'Moderate';
-  } else if (vis >= 800) {
-    intensity = 'Moderate';   // ← для 800–2000 – Moderate, а не Heavy
-  } else {
-    intensity = 'Heavy';
+  // Загружаем таблицу интенсивности
+  const table = await loadSnowIntensityTable();
+  const isCold = temperature <= -1;
+  const isNight = dayNight === 'Night';
+
+  // Ищем подходящий диапазон видимости
+  for (const range of table.ranges) {
+    if (vis >= range.min && vis <= range.max) {
+      if (isNight) {
+        return isCold ? range.night_cold : range.night_warm;
+      } else {
+        return isCold ? range.day_cold : range.day_warm;
+      }
+    }
   }
-  return intensity;
+
+  // Если диапазон не найден — возвращаем Moderate как fallback
+  return 'Moderate';
 }
 
+/**
+ * Построение контекста: флаги и интенсивность
+ */
 export async function buildContext(events, temperature, visibility, dayNight) {
   const meta = await loadMetarEvents();
   const snowCodes = ['SN', 'SG', 'GS'];
@@ -53,8 +73,10 @@ export async function buildContext(events, temperature, visibility, dayNight) {
   const fzfgCodes = ['FZFG', 'FZBR'];
   const note6Triggers = ['SNRA', 'SNDZ', 'RASN', 'DZSN'];
 
-  const intensity = getSnowIntensity(events, temperature, visibility, dayNight);
+  // Интенсивность снега (асинхронно)
+  const intensity = await getSnowIntensity(events, temperature, visibility, dayNight);
 
+  // Флаги
   const snowfall = events.some(e => snowCodes.some(s => e.includes(s)));
   const heavy_snowfall = events.some(e => e.startsWith('+') && snowCodes.some(s => e.includes(s)));
   const light_snowfall = events.some(e => e.startsWith('-') && snowCodes.some(s => e.includes(s)));
