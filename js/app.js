@@ -118,11 +118,8 @@ async function onCalculate() {
       }
     }
 
-    // --- Собираем предупреждения ---
+    // --- Собираем предупреждения (уже без GS, так как выводим отдельно) ---
     const warnings = hotResult.warnings || [];
-    if (hasGS) {
-      warnings.push('🔔 Рекомендуется уточнить тип осадков по голосовой информации ATIS.');
-    }
 
     renderResult(parsed, context, hotResult, atPg, atEg, metar, warnings, hasGS);
   } catch (err) {
@@ -220,7 +217,7 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
     }
   }
 
-  // Специальное предупреждение для GS
+  // Специальное предупреждение для GS (только здесь, без дублирования)
   if (hasGS) {
     html += `<div class="warning-box" style="background: #fff3cd; color: #856404; border-left-color: #ffc107;">
       ⚠️ <strong>Рекомендация:</strong> Уточните тип осадков по голосовой информации ATIS.
