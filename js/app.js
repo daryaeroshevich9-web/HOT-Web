@@ -184,7 +184,7 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
     <p><strong>События:</strong> ${parsed.events.join(', ') || '—'}</p>
     <p><strong>Интенсивность:</strong> ${context.intensity}</p>`;
 
-  // HOT
+  // --- HOT ---
   const hot = hotResult.hot;
   const status = getHotStatus(hot);
 
@@ -192,39 +192,39 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
     html += `<h3>⏳ Время защитного действия (HOT)</h3>`;
     for (const [conc, time] of Object.entries(hot)) {
       const concStatus = getHotStatus(time);
-      html += `<span class="concentration-item status-${concStatus}"><strong>${conc}:</strong> ${time}</span>`;
+      // Используем time-value conc-value с тем же статусом
+      html += `<div><span class="time-value conc-value status-${concStatus}"><strong>${conc}:</strong> ${time}</span></div>`;
     }
   } else {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>
-      <div class="hot-value status-${status}">${hot}</div>`;
+      <span class="time-value hot-value status-${status}">${hot}</span>`;
   }
 
-  // AT (если есть)
+  // --- AT (если есть) ---
   const hasAT = (atPg && atPg.hot) || (atEg && atEg.hot);
   if (hasAT) {
     html += `<h3>⏳ Allowance Time (AT)</h3>`;
     if (atPg && atPg.hot && atPg.hot !== '') {
       const atStatus = getHotStatus(atPg.hot);
-      html += `<div><strong>PG (пропиленгликоль):</strong> <span class="hot-value status-${atStatus}" style="font-size:1.4em;">${atPg.hot}</span></div>`;
+      html += `<div><span class="time-value at-value status-${atStatus}"><strong>PG:</strong> ${atPg.hot}</span></div>`;
     } else {
-      html += `<div><strong>PG (пропиленгликоль):</strong> <span class="status-warning">Нет данных</span></div>`;
+      html += `<div><span class="time-value at-value status-warning"><strong>PG:</strong> Нет данных</span></div>`;
     }
     if (atEg && atEg.hot && atEg.hot !== '') {
       const atStatus = getHotStatus(atEg.hot);
-      html += `<div><strong>EG (этиленгликоль):</strong> <span class="hot-value status-${atStatus}" style="font-size:1.4em;">${atEg.hot}</span></div>`;
+      html += `<div><span class="time-value at-value status-${atStatus}"><strong>EG:</strong> ${atEg.hot}</span></div>`;
     } else {
-      html += `<div><strong>EG (этиленгликоль):</strong> <span class="status-warning">Нет данных</span></div>`;
+      html += `<div><span class="time-value at-value status-warning"><strong>EG:</strong> Нет данных</span></div>`;
     }
   }
 
-  // Специальное предупреждение для GS (только здесь, без дублирования)
+  // --- Предупреждения ---
   if (hasGS) {
     html += `<div class="warning-box" style="background: #fff3cd; color: #856404; border-left-color: #ffc107;">
       ⚠️ <strong>Рекомендация:</strong> Уточните тип осадков по голосовой информации ATIS.
     </div>`;
   }
 
-  // Другие предупреждения (например, LOUT ≤ OAT)
   if (warnings && warnings.length > 0) {
     warnings.forEach(w => {
       html += `<div class="warning-box">${w}</div>`;
