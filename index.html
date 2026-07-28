@@ -25,6 +25,7 @@
     h1 {
       color: #0d6efd;
       margin-top: 0;
+      font-size: 1.8em;
     }
     .form-group {
       margin-bottom: 20px;
@@ -44,7 +45,6 @@
       border: 1px solid #ced4da;
       background: white;
     }
-    /* Светлый placeholder для обоих текстовых полей */
     #icaoInput::placeholder,
     #manualMetar::placeholder {
       color: #adb5bd;
@@ -72,7 +72,6 @@
       border-radius: 8px;
       display: none;
     }
-    /* Уменьшенные отступы в результатах */
     .result p, .result h3 {
       margin: 6px 0;
     }
@@ -111,32 +110,31 @@
     }
 
     /* ----- Единый стиль для всех временных значений (уменьшенный) ----- */
-.time-value {
-  font-weight: 600;
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin: 3px 6px 3px 0;
-  background: #e9ecef;
-  color: #212529;
-  font-size: 1.2em;
-}
-.result h3 {
-  font-size: 1.1em;
-  margin-top: 12px;
-  margin-bottom: 6px;
-}
-.result p {
-  font-size: 0.95em;
-  margin: 4px 0;
-}
+    .time-value {
+      font-weight: 600;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin: 3px 6px 3px 0;
+      background: #e9ecef;
+      color: #212529;
+      font-size: 1.2em;
+    }
+    .result h3 {
+      font-size: 1.1em;
+      margin-top: 12px;
+      margin-bottom: 6px;
+    }
+    .result p {
+      font-size: 0.95em;
+      margin: 4px 0;
+    }
 
-    /* Адаптивность */
     @media (max-width: 600px) {
       .container { padding: 15px; }
-      .hot-value { font-size: 1.6em; }
-      .at-value { font-size: 1.2em; }
-      .concentration-item { font-size: 1.1em; margin: 4px 10px 4px 0; }
+      .time-value { font-size: 1.0em; padding: 3px 8px; }
+      .result h3 { font-size: 1.0em; }
+      .result p { font-size: 0.9em; }
     }
   </style>
 </head>
@@ -145,13 +143,11 @@
   <h1>🛫 HOT BOT — Расчёт времени защитного действия</h1>
   <p>Введите ICAO-код аэропорта, выберите жидкость и время суток, затем нажмите «Рассчитать».</p>
 
-  <!-- Поле ввода ICAO -->
   <div class="form-group">
     <label for="icaoInput">Код аэропорта (ICAO)</label>
     <input type="text" id="icaoInput" placeholder="Введите код аэропорта">
   </div>
 
-  <!-- Жидкость -->
   <div class="form-group">
     <label for="fluid">Тип жидкости</label>
     <select id="fluid">
@@ -169,7 +165,6 @@
     </select>
   </div>
 
-  <!-- День / Ночь -->
   <div class="form-group">
     <label>Время суток</label>
     <div class="flex">
@@ -178,16 +173,13 @@
     </div>
   </div>
 
-  <!-- Ручной ввод METAR (для теста) -->
   <div class="form-group">
     <label for="manualMetar">Или введите METAR вручную (для теста):</label>
     <input type="text" id="manualMetar" placeholder="UUEE 251630Z 35003MPS 9999 -SN OVC011 M04/M07" style="width:100%; padding:8px; border-radius:6px; border:1px solid #ced4da;">
   </div>
 
-  <!-- Кнопка -->
   <button id="calculateBtn">Рассчитать</button>
 
-  <!-- Блоки результата -->
   <div id="result" class="result"></div>
   <div id="error" class="error"></div>
   <div id="spinner" class="spinner">⏳ Загрузка...</div>
