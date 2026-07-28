@@ -19,15 +19,15 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
   }
 
   const tableData = await loadTable(fileId);
-  const { temperature_bands, table, event_index, event_index_rules, rules } = tableData;
+  const { temperature_bands, table, event_index, event_index_rules, rules, lout } = tableData;
 
   // 1. Находим температурный индекс
   const tempIndex = findTemperatureIndex(temperature, temperature_bands);
   if (tempIndex === null) {
-    return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [] };
+    return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [], lout: lout || null };
   }
 
-  // 2. Строим контекст для движка правил, добавляем subtype если передан
+  // 2. Строим контекст для движка правил
   const ruleContext = {
     temp: temperature,
     intensity: intensity,
@@ -48,7 +48,7 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
       if (ruleResult.result !== null) {
         const resultStr = ruleResult.result;
         if (resultStr.includes('CAUTION') || resultStr.includes(':')) {
-          return { hot: resultStr, at_pg: null, at_eg: null, warnings: [] };
+          return { hot: resultStr, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
         } else {
           eventIndex = resultStr;
         }
@@ -69,7 +69,7 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
   }
 
   if (eventIndex === null) {
-    return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [] };
+    return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [], lout: lout || null };
   }
 
   // 5. Применяем основные rules
@@ -86,12 +86,12 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
   }
 
   if (finalResult !== null) {
-    return { hot: finalResult, at_pg: null, at_eg: null, warnings: [] };
+    return { hot: finalResult, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
   }
 
   // 6. Извлекаем значение из таблицы
   if (typeof eventIndex !== 'number') {
-    return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [] };
+    return { hot: 'CAUTION: No holdover time guidelines exist', at_pg: null, at_eg: null, warnings: [], lout: lout || null };
   }
 
   const row = table[tempIndex];
@@ -109,7 +109,7 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     result = cellValue;
   }
 
-  return { hot: result, at_pg: null, at_eg: null, warnings: [] };
+  return { hot: result, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
 }
 
 export async function calculateAT(fluidType, temperature, intensity, context, events, dayNight, atType, subtype = null) {
