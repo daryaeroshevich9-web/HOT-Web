@@ -1,10 +1,5 @@
 // js/rule-engine.js
 
-/**
- * Проверяет, выполняется ли условие правила (объект when)
- * context: { temp, intensity, event_index, note_6, snowfall, ... }
- * events: массив строк METAR
- */
 export function evaluateCondition(when, context, events) {
   for (const [key, value] of Object.entries(when)) {
     switch (key) {
@@ -59,12 +54,10 @@ export function evaluateCondition(when, context, events) {
       case 'events_list_eq':
         if (!Array.isArray(value) || value.length !== events.length || !value.every(v => events.some(e => e.includes(v)))) return false;
         break;
-      // ---- НОВАЯ ЗАГЛУШКА ----
+      // Заглушка для условия из бота
       case 'event_index_eq_table_len_ref':
-        // В веб-версии это условие не используется, считаем его ложным
         return false;
       default:
-        // Неизвестное условие — игнорируем, считаем ложным
         console.warn('Неизвестное условие в правиле:', key);
         return false;
     }
@@ -72,10 +65,6 @@ export function evaluateCondition(when, context, events) {
   return true;
 }
 
-/**
- * Применяет правила (массив) к контексту и событиям.
- * Возвращает: { result: string|null, event_index_override: number|null, matched: boolean }
- */
 export function applyRules(rules, context, events) {
   const sorted = [...rules].sort((a, b) => (a.priority || 999) - (b.priority || 999));
   for (const rule of sorted) {
