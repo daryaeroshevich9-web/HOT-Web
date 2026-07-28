@@ -28,7 +28,6 @@ async function init() {
     metarEvents = await loadJSON('data/config/metar_events.json');
     console.log('✅ metar_events загружены');
 
-    // Загружаем список allowance_events
     allowanceEvents = await loadJSON('data/config/allowance_events.json');
     console.log('✅ allowance_events загружены');
 
@@ -100,12 +99,16 @@ async function onCalculate() {
     let atPg = null;
     let atEg = null;
 
-    // Проверяем условия для показа AT
-    const showAT = (
-      hotResult.hot?.includes('CAUTION') ||                              // HOT не определён
-      parsed.events.some(e => e.includes('GS')) ||                     // есть GS
-      parsed.events.some(e => allowanceEvents?.allowance_events?.some(ae => e.includes(ae))) // есть allowance_events
+    // Проверяем, является ли HOT строкой с "CAUTION"
+    const isHotCaution = typeof hotResult.hot === 'string' && hotResult.hot.includes('CAUTION');
+    // Проверяем наличие GS
+    const hasGS = parsed.events.some(e => e.includes('GS'));
+    // Проверяем наличие allowance_events
+    const hasAllowanceEvent = parsed.events.some(e => 
+      allowanceEvents?.allowance_events?.some(ae => e.includes(ae))
     );
+
+    const showAT = isHotCaution || hasGS || hasAllowanceEvent;
 
     if (showAT) {
       try {
@@ -128,7 +131,7 @@ async function onCalculate() {
   }
 }
 
-// ===== ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (VATSIM, БЕЗ ТОКЕНА) =====
+// ===== ФУНКЦИЯ ПОЛУЧЕНИЯ METAR (VATSIM) =====
 async function fetchMetar(icao) {
   const url = `https://metar.vatsim.net/metar.php?id=${icao}`;
   console.log(`📡 Запрос к VATSIM: ${icao}`);
