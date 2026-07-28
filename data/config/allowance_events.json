@@ -1,0 +1,15 @@
+{
+  "allowance_events": [
+    "-PL", "-GS", "-PLSN", "-SNPL", "-GSSN", "-SNGS", "-PLFZDZ", "-FZDZPL",
+    "FZDZPL", "+FZDZPL", "-GSFZDZ", "-FZDZGS", "FZDZGS", "+FZDZGS",
+    "-PLDZ", "-DZPL", "DZPL", "+DZPL", "-GSDZ", "-DZGS", "DZGS", "+DZGS",
+    "-PLFZRA", "-FZRAPL", "-GSFZRA", "-FZRAGS",
+    "-PLRA", "-RAPL", "-GSRA", "-RAGS",
+    "-PLFZRASN", "-PLSNFZRA", "-FZRAPLSN", "-FZRASNPL", "-SNPLFZRA",
+    "-SNFZRAPL", "-GSFZRASN", "-GSSNFZRA", "-FZRAGSSN", "-FZRASNGS",
+    "-SNGSFZRA", "-SNFZRAGS", "-PLRASN", "-PLSNRA", "-RAPLSN", "-RASNPL",
+    "-SNPLRA", "-SNRAPL", "-GSRASN", "-GSSNRA", "-RAGSSN", "-RASNGS",
+    "-SNGSRA", "-SNRAGS", "PL", "GS", "PLSN", "SNPL", "GSSN", "SNGS",
+    "PLFZDZ", "GSFZDZ", "PLDZ", "GSDZ", "PLRA", "RAPL", "GSRA", "RAGS"
+  ]
+}
