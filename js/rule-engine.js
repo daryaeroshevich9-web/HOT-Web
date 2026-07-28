@@ -59,8 +59,12 @@ export function evaluateCondition(when, context, events) {
       case 'events_list_eq':
         if (!Array.isArray(value) || value.length !== events.length || !value.every(v => events.some(e => e.includes(v)))) return false;
         break;
+      // ---- НОВАЯ ЗАГЛУШКА ----
+      case 'event_index_eq_table_len_ref':
+        // В веб-версии это условие не используется, считаем его ложным
+        return false;
       default:
-        // Неизвестное условие — игнорируем
+        // Неизвестное условие — игнорируем, считаем ложным
         console.warn('Неизвестное условие в правиле:', key);
         return false;
     }
@@ -73,7 +77,6 @@ export function evaluateCondition(when, context, events) {
  * Возвращает: { result: string|null, event_index_override: number|null, matched: boolean }
  */
 export function applyRules(rules, context, events) {
-  // Сортируем по приоритету (от меньшего к большему)
   const sorted = [...rules].sort((a, b) => (a.priority || 999) - (b.priority || 999));
   for (const rule of sorted) {
     if (evaluateCondition(rule.when, context, events)) {
