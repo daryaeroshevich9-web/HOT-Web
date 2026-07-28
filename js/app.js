@@ -91,11 +91,37 @@ async function onCalculate() {
     const context = await buildContext(parsed.events, parsed.temperature, parsed.visibility, dayNight);
     console.log('🧠 Контекст:', context);
 
-    // --- Расчёт HOT ---
-    const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'hot', subtype);
+    // --- ПРОВЕРКА CAVOK И МАСКИРУЮЩИХ ЯВЛЕНИЙ ---
+    const obscurationOnlyCodes = ['FU', 'HZ', 'SA', 'DU', 'VA'];
+    const isCavok = parsed.visibility === 'CAVOK';
+    const hasPrecipitation = parsed.events.some(e => {
+      const precipCodes = ['SN', 'RA', 'DZ', 'PL', 'SG', 'GS', 'IC', 'GR', 'PE'];
+      return precipCodes.some(p => e.includes(p));
+    });
+    const hasOnlyObscuration = !hasPrecipitation && parsed.events.length > 0 && 
+      parsed.events.every(e => obscurationOnlyCodes.some(oc => e.includes(oc)));
+
+    let hotResult;
+    let atPg = null;
+    let atEg = null;
+
+    if (isCavok || hasOnlyObscuration) {
+      let message;
+      if (isCavok) {
+        message = 'CAVOK — видимость более 10 км, осадков нет';
+      } else {
+        message = 'Только маскирующие явления (без осадков), HOT не рассчитывается';
+      }
+      hotResult = { hot: message, at_pg: null, at_eg: null, warnings: [] };
+      renderResult(parsed, context, hotResult, null, null, metar, [], false);
+      return;
+    }
+
+    // --- ОБЫЧНЫЙ РАСЧЁТ HOT ---
+    hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'hot', subtype);
     console.log('📊 Результат HOT:', hotResult);
 
-    // --- Флаги для AT ---
+    // --- ФЛАГИ ДЛЯ AT ---
     const isHotCaution = typeof hotResult.hot === 'string' && hotResult.hot.includes('CAUTION');
     const hasGS = parsed.events.some(e => e.includes('GS'));
     const hasAllowanceEvent = parsed.events.some(e => 
@@ -104,9 +130,7 @@ async function onCalculate() {
 
     const showAT = isHotCaution || hasGS || hasAllowanceEvent;
 
-    // --- Расчёт AT (если необходимо) ---
-    let atPg = null;
-    let atEg = null;
+    // --- РАСЧЁТ AT (если необходимо) ---
     if (showAT) {
       try {
         atPg = await calculateAT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'allowance_pg', subtype);
@@ -118,8 +142,14 @@ async function onCalculate() {
       }
     }
 
-    // --- Собираем предупреждения (уже без GS, так как выводим отдельно) ---
+    // --- ПРОВЕРКА LOUT ДЛЯ TYPE II/IV ---
+    const loutFluids = ['type_ii_generic', 'type_ii_cryotech', 'type_ii_kilfrost', 
+                        'type_iv_generic', 'type_iv_aviafluid', 'type_iv_nordix'];
     const warnings = hotResult.warnings || [];
+    if (loutFluids.includes(fluid) && hotResult.lout !== null && parsed.temperature < hotResult.lout) {
+      const warningText = `⚠️ Внимание: LOUT (минимальная рабочая температура) = ${hotResult.lout}°C. Текущая OAT = ${parsed.temperature}°C. Убедитесь, что LOUT ≤ OAT.`;
+      warnings.push(warningText);
+    }
 
     renderResult(parsed, context, hotResult, atPg, atEg, metar, warnings, hasGS);
   } catch (err) {
@@ -166,12 +196,8 @@ async function fetchMetar(icao) {
 // ===== Вспомогательные функции =====
 
 function getHotStatus(hotValue) {
-  if (typeof hotValue === 'object') return 'success';
-  const str = String(hotValue);
-  if (str.includes('CAUTION')) return 'danger';
-  if (str.includes('No snow') || str.includes('CAVOK')) return 'warning';
-  if (str.includes(':')) return 'success';
-  return 'warning';
+  // Упрощено, так как цветовая индикация убрана
+  return 'success';
 }
 
 function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings = [], hasGS = false) {
@@ -220,7 +246,7 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
     </div>`;
   }
 
-  // --- Остальные предупреждения ---
+  // --- Остальные предупреждения (включая LOUT) ---
   if (warnings && warnings.length > 0) {
     warnings.forEach(w => {
       html += `<div class="warning-box">${w}</div>`;
