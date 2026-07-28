@@ -190,7 +190,6 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
   if (typeof hot === 'object') {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>`;
     for (const [conc, time] of Object.entries(hot)) {
-      // Все концентрации выводятся с одинаковым стилем time-value
       html += `<div><span class="time-value"><strong>${conc}:</strong> ${time}</span></div>`;
     }
   } else {
@@ -214,13 +213,14 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
     }
   }
 
-  // --- Предупреждения ---
+  // --- GS-рекомендация ---
   if (hasGS) {
     html += `<div class="warning-box" style="background: #fff3cd; color: #856404; border-left-color: #ffc107;">
       ⚠️ <strong>Рекомендация:</strong> Уточните тип осадков по голосовой информации ATIS.
     </div>`;
   }
 
+  // --- Остальные предупреждения ---
   if (warnings && warnings.length > 0) {
     warnings.forEach(w => {
       html += `<div class="warning-box">${w}</div>`;
