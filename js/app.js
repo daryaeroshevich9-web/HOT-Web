@@ -186,18 +186,16 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
 
   // --- HOT ---
   const hot = hotResult.hot;
-  const status = getHotStatus(hot);
 
   if (typeof hot === 'object') {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>`;
     for (const [conc, time] of Object.entries(hot)) {
-      const concStatus = getHotStatus(time);
-      // Используем time-value conc-value с тем же статусом
-      html += `<div><span class="time-value conc-value status-${concStatus}"><strong>${conc}:</strong> ${time}</span></div>`;
+      // Все концентрации выводятся с одинаковым стилем time-value
+      html += `<div><span class="time-value"><strong>${conc}:</strong> ${time}</span></div>`;
     }
   } else {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>
-      <span class="time-value hot-value status-${status}">${hot}</span>`;
+      <span class="time-value">${hot}</span>`;
   }
 
   // --- AT (если есть) ---
@@ -205,16 +203,14 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings
   if (hasAT) {
     html += `<h3>⏳ Allowance Time (AT)</h3>`;
     if (atPg && atPg.hot && atPg.hot !== '') {
-      const atStatus = getHotStatus(atPg.hot);
-      html += `<div><span class="time-value at-value status-${atStatus}"><strong>PG:</strong> ${atPg.hot}</span></div>`;
+      html += `<div><span class="time-value"><strong>PG:</strong> ${atPg.hot}</span></div>`;
     } else {
-      html += `<div><span class="time-value at-value status-warning"><strong>PG:</strong> Нет данных</span></div>`;
+      html += `<div><span class="time-value" style="background:#f8f9fa; color:#6c757d;"><strong>PG:</strong> Нет данных</span></div>`;
     }
     if (atEg && atEg.hot && atEg.hot !== '') {
-      const atStatus = getHotStatus(atEg.hot);
-      html += `<div><span class="time-value at-value status-${atStatus}"><strong>EG:</strong> ${atEg.hot}</span></div>`;
+      html += `<div><span class="time-value"><strong>EG:</strong> ${atEg.hot}</span></div>`;
     } else {
-      html += `<div><span class="time-value at-value status-warning"><strong>EG:</strong> Нет данных</span></div>`;
+      html += `<div><span class="time-value" style="background:#f8f9fa; color:#6c757d;"><strong>EG:</strong> Нет данных</span></div>`;
     }
   }
 
