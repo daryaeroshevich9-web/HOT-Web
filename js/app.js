@@ -95,21 +95,18 @@ async function onCalculate() {
     const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'hot', subtype);
     console.log('📊 Результат HOT:', hotResult);
 
-    // --- Расчёт AT (если необходимо) ---
-    let atPg = null;
-    let atEg = null;
-
-    // Проверяем, является ли HOT строкой с "CAUTION"
+    // --- Флаги для AT ---
     const isHotCaution = typeof hotResult.hot === 'string' && hotResult.hot.includes('CAUTION');
-    // Проверяем наличие GS
     const hasGS = parsed.events.some(e => e.includes('GS'));
-    // Проверяем наличие allowance_events
     const hasAllowanceEvent = parsed.events.some(e => 
       allowanceEvents?.allowance_events?.some(ae => e.includes(ae))
     );
 
     const showAT = isHotCaution || hasGS || hasAllowanceEvent;
 
+    // --- Расчёт AT (если необходимо) ---
+    let atPg = null;
+    let atEg = null;
     if (showAT) {
       try {
         atPg = await calculateAT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'allowance_pg', subtype);
@@ -121,7 +118,13 @@ async function onCalculate() {
       }
     }
 
-    renderResult(parsed, context, hotResult, atPg, atEg, metar);
+    // --- Собираем предупреждения ---
+    const warnings = hotResult.warnings || [];
+    if (hasGS) {
+      warnings.push('🔔 Рекомендуется уточнить тип осадков по голосовой информации ATIS.');
+    }
+
+    renderResult(parsed, context, hotResult, atPg, atEg, metar, warnings, hasGS);
   } catch (err) {
     errorDiv.textContent = '❌ Ошибка: ' + err.message;
     console.error(err);
@@ -174,7 +177,7 @@ function getHotStatus(hotValue) {
   return 'warning';
 }
 
-function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar) {
+function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar, warnings = [], hasGS = false) {
   const div = document.getElementById('result');
   div.style.display = 'block';
 
@@ -217,8 +220,18 @@ function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar) {
     }
   }
 
-  if (hotResult.warnings && hotResult.warnings.length > 0) {
-    html += `<div class="warning-box">${hotResult.warnings.join('<br>')}</div>`;
+  // Специальное предупреждение для GS
+  if (hasGS) {
+    html += `<div class="warning-box" style="background: #fff3cd; color: #856404; border-left-color: #ffc107;">
+      ⚠️ <strong>Рекомендация:</strong> Уточните тип осадков по голосовой информации ATIS.
+    </div>`;
+  }
+
+  // Другие предупреждения (например, LOUT ≤ OAT)
+  if (warnings && warnings.length > 0) {
+    warnings.forEach(w => {
+      html += `<div class="warning-box">${w}</div>`;
+    });
   }
 
   html += `<button onclick="document.getElementById('metarRaw').classList.toggle('show')">Показать METAR</button>
