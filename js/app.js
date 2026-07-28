@@ -2,11 +2,10 @@
 import { loadJSON } from './utils.js';
 import { parseMetar } from './metar-parser.js';
 import { buildContext } from './context-builder.js';
-import { calculateHOT } from './hot-calculator.js';
+import { calculateHOT, calculateAT } from './hot-calculator.js';
 
 console.log('✅ app.js загружен');
 
-// Список жидкостей (для информации, в селекте уже есть опции)
 const FLUID_TYPES = [
   { id: 'type_i', label: 'Type I Generic', subtype: null },
   { id: 'type_ii_generic', label: 'Type II Generic', subtype: null },
@@ -21,13 +20,18 @@ const FLUID_TYPES = [
 ];
 
 let metarEvents = null;
+let allowanceEvents = null;
 
 async function init() {
   console.log('🚀 init() вызван');
   try {
-    // Загружаем только metar_events (список аэропортов больше не нужен)
     metarEvents = await loadJSON('data/config/metar_events.json');
     console.log('✅ metar_events загружены');
+
+    // Загружаем список allowance_events
+    allowanceEvents = await loadJSON('data/config/allowance_events.json');
+    console.log('✅ allowance_events загружены');
+
     document.getElementById('calculateBtn').addEventListener('click', onCalculate);
     console.log('✅ Обработчик кнопки добавлен');
   } catch (err) {
@@ -37,7 +41,6 @@ async function init() {
 }
 
 async function onCalculate() {
-  // 1. Получаем ICAO из поля ввода
   const icaoInput = document.getElementById('icaoInput');
   const airport = icaoInput.value.trim().toUpperCase();
   if (!airport) {
@@ -45,7 +48,6 @@ async function onCalculate() {
     return;
   }
 
-  // 2. Получаем выбранную жидкость
   const fluidSelect = document.getElementById('fluid');
   const fluid = fluidSelect.value;
   if (!fluid) {
@@ -90,10 +92,33 @@ async function onCalculate() {
     const context = await buildContext(parsed.events, parsed.temperature, parsed.visibility, dayNight);
     console.log('🧠 Контекст:', context);
 
+    // --- Расчёт HOT ---
     const hotResult = await calculateHOT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'hot', subtype);
     console.log('📊 Результат HOT:', hotResult);
 
-    renderResult(parsed, context, hotResult, metar);
+    // --- Расчёт AT (если необходимо) ---
+    let atPg = null;
+    let atEg = null;
+
+    // Проверяем условия для показа AT
+    const showAT = (
+      hotResult.hot?.includes('CAUTION') ||                              // HOT не определён
+      parsed.events.some(e => e.includes('GS')) ||                     // есть GS
+      parsed.events.some(e => allowanceEvents?.allowance_events?.some(ae => e.includes(ae))) // есть allowance_events
+    );
+
+    if (showAT) {
+      try {
+        atPg = await calculateAT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'allowance_pg', subtype);
+        atEg = await calculateAT(fluid, parsed.temperature, context.intensity, context, parsed.events, dayNight, 'allowance_eg', subtype);
+        console.log('📊 AT PG:', atPg);
+        console.log('📊 AT EG:', atEg);
+      } catch (err) {
+        console.warn('⚠️ Ошибка расчёта AT:', err);
+      }
+    }
+
+    renderResult(parsed, context, hotResult, atPg, atEg, metar);
   } catch (err) {
     errorDiv.textContent = '❌ Ошибка: ' + err.message;
     console.error(err);
@@ -146,7 +171,7 @@ function getHotStatus(hotValue) {
   return 'warning';
 }
 
-function renderResult(parsed, context, hotResult, rawMetar) {
+function renderResult(parsed, context, hotResult, atPg, atEg, rawMetar) {
   const div = document.getElementById('result');
   div.style.display = 'block';
 
@@ -156,6 +181,7 @@ function renderResult(parsed, context, hotResult, rawMetar) {
     <p><strong>События:</strong> ${parsed.events.join(', ') || '—'}</p>
     <p><strong>Интенсивность:</strong> ${context.intensity}</p>`;
 
+  // HOT
   const hot = hotResult.hot;
   const status = getHotStatus(hot);
 
@@ -168,6 +194,24 @@ function renderResult(parsed, context, hotResult, rawMetar) {
   } else {
     html += `<h3>⏳ Время защитного действия (HOT)</h3>
       <div class="hot-value status-${status}">${hot}</div>`;
+  }
+
+  // AT (если есть)
+  const hasAT = (atPg && atPg.hot) || (atEg && atEg.hot);
+  if (hasAT) {
+    html += `<h3>⏳ Allowance Time (AT)</h3>`;
+    if (atPg && atPg.hot && atPg.hot !== '') {
+      const atStatus = getHotStatus(atPg.hot);
+      html += `<div><strong>PG (пропиленгликоль):</strong> <span class="hot-value status-${atStatus}" style="font-size:1.4em;">${atPg.hot}</span></div>`;
+    } else {
+      html += `<div><strong>PG (пропиленгликоль):</strong> <span class="status-warning">Нет данных</span></div>`;
+    }
+    if (atEg && atEg.hot && atEg.hot !== '') {
+      const atStatus = getHotStatus(atEg.hot);
+      html += `<div><strong>EG (этиленгликоль):</strong> <span class="hot-value status-${atStatus}" style="font-size:1.4em;">${atEg.hot}</span></div>`;
+    } else {
+      html += `<div><strong>EG (этиленгликоль):</strong> <span class="status-warning">Нет данных</span></div>`;
+    }
   }
 
   if (hotResult.warnings && hotResult.warnings.length > 0) {
