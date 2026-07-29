@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Техническое задание HOT BOT</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding: 20px 15px;
+            color: #1e293b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        h1 {
+            font-size: 22px;
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        h2 {
+            font-size: 18px;
+            color: #0d6efd;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-left: 5px solid #0d6efd;
+            padding-left: 12px;
+        }
+        h3 {
+            font-size: 16px;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            color: #0b5ed7;
+        }
+        h4 {
+            font-size: 14px;
+            margin-top: 10px;
+            margin-bottom: 4px;
+            color: #0b5ed7;
+        }
+        p, li {
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+        ul, ol {
+            padding-left: 20px;
+            margin-bottom: 8px;
+        }
+        code {
+            background: #eef2f6;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+        .highlight {
+            font-weight: 600;
+            color: #0d6efd;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #e9edf2;
+            font-weight: 600;
+        }
+        .table-wrap {
+            overflow-x: auto;
+        }
+        .badge {
+            display: inline-block;
+            background: #e9edf2;
+            padding: 0 6px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #d1d5db;
+            text-align: center;
+            color: #6c757d;
+            font-size: 13px;
+        }
+        hr {
+            margin: 20px 0;
+            border: 0;
+            border-top: 1px dashed #d1d5db;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 10px 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            margin: 6px 0 10px 0;
+        }
+        blockquote {
+            margin: 6px 0 8px 20px;
+            padding-left: 10px;
+            border-left: 3px solid #0d6efd;
+            color: #1e293b;
+        }
+        @media (max-width: 700px) {
+            .container { padding: 15px; }
+            body { font-size: 13px; }
+            table { font-size: 11px; }
+            th, td { padding: 4px 6px; }
+        }
+        @media print {
+            body { background: white; padding: 10px; font-size: 11px; }
+            .container { box-shadow: none; padding: 15px; }
+            h1 { font-size: 18px; }
+            h2 { font-size: 15px; }
+            h3 { font-size: 13px; }
+            table { font-size: 10px; }
+            pre { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>ТЕХНИЧЕСКОЕ ЗАДАНИЕ НА РАЗРАБОТКУ ВЕБ-СЕРВИСА<br>«HOT BOT — РАСЧЁТ ВРЕМЕНИ ЗАЩИТНОГО ДЕЙСТВИЯ»</h1>
+    <p style="text-align:center; color:#6c757d; margin-bottom:20px; font-size:0.9em;"><em>Версия 1.0 от 28.07.2026</em></p>
+
+    <!-- 1. ВВЕДЕНИЕ -->
+    <h2>1. ВВЕДЕНИЕ</h2>
+    <h3>Назначение системы</h3>
+    <p>Система предназначена для оперативного расчёта <strong>времени защитного действия</strong> (Holdover Time, HOT) и <strong>допустимого времени</strong> (Allowance Time, AT) противообледенительных жидкостей для пилотов гражданской авиации. Расчёт выполняется на основе актуальных метеорологических данных (METAR) и таблиц SAE / Transport Canada 2025–2026, адаптированных для авиакомпании «Победа».</p>
+
+    <hr>
+
+    <!-- 2. ОБЩЕЕ ОПИСАНИЕ СИСТЕМЫ -->
+    <h2>2. ОБЩЕЕ ОПИСАНИЕ СИСТЕМЫ</h2>
+    <h3>Сценарии использования</h3>
+    <h4>Основной сценарий</h4>
+    <ol>
+        <li>Пользователь открывает сайт в браузере (ПК, планшет, смартфон).</li>
+        <li>Вводит ICAO-код аэропорта (например, UUEE) в текстовое поле.</li>
+        <li>Выбирает тип противообледенительной жидкости из выпадающего списка:
+            <ul>
+                <li>Type I Generic</li>
+                <li>Type II Generic</li>
+                <li>Type II Cryotech</li>
+                <li>Type II Kilfrost</li>
+                <li>Type IV Generic</li>
+                <li>Type IV Aviafluid</li>
+                <li>Type IV Nordix</li>
+                <li>Active Frost (Type I)</li>
+                <li>Active Frost (Type II)</li>
+                <li>Active Frost (Type IV)</li>
+            </ul>
+        </li>
+        <li>Выбирает время суток (<strong>День</strong> / <strong>Ночь</strong>) – влияет на расчёт интенсивности.</li>
+        <li>Нажимает кнопку «Рассчитать».</li>
+        <li>Система выполняет расчёт и отображает результат:
+            <ul>
+                <li><strong>Текущая погода</strong>: температура, видимость, события, интенсивность (Day/Night).</li>
+                <li><strong>Значение HOT</strong> для выбранной жидкости:
+                    <ul>
+                        <li>диапазон минут (например, «0:14 – 0:17»);</li>
+                        <li>предупреждение <em>«CAUTION: No holdover time guidelines exist»</em>;</li>
+                        <li>специальные сообщения: <em>«CAVOK — видимость более 10 км, осадков нет»</em> или <em>«Только маскирующие явления (без осадков), HOT не рассчитывается»</em>.</li>
+                    </ul>
+                </li>
+                <li><strong>Allowance Time (PG и EG)</strong> – если выполняется одно из условий:
+                    <ul>
+                        <li>HOT = <em>«CAUTION»</em> (isHotCaution);</li>
+                        <li>в METAR есть событие <strong>GS</strong> (снежные крупицы);</li>
+                        <li>в METAR есть любое событие из списка <code>allowance_events.json</code>.</li>
+                    </ul>
+                </li>
+                <li><strong>Дополнительные примечания</strong>:
+                    <ul>
+                        <li>для GS: <em>«Рекомендуется уточнить тип осадков по голосовой информации ATIS»</em>;</li>
+                        <li>для Type II/IV при OAT &lt; LOUT: <em>«Убедитесь, что LOUT (минимальная рабочая температура) ≤ OAT. LOUT = XX°C»</em>.</li>
+                    </ul>
+                </li>
+                <li><strong>Сырой METAR</strong> внизу блока результата мелким серым шрифтом.</li>
+            </ul>
+        </li>
+    </ol>
+
+    <h4>Альтернативные сценарии</h4>
+    <ul>
+        <li><strong>METAR недоступен</strong> – если источник не отвечает или не возвращает данные, система выводит сообщение: <em>«Не удалось получить METAR. Попробуйте позже или введите вручную»</em>. При этом поле ручного ввода METAR позволяет вставить строку вручную.</li>
+        <li><strong>CAVOK или только маскирующие явления</strong> – если видимость CAVOK или события содержат только FU, HZ, SA, DU, VA (без осадков), система выводит специальное сообщение, расчёт HOT не производится.</li>
+        <li><strong>HOT не определён</strong> – если для данных условий нет значения в таблице или правила вернули предупреждение, система выводит <em>«CAUTION: No holdover time guidelines exist»</em> и при этом показывает Allowance Time (если применимо).</li>
+        <li><strong>LOUT нарушена</strong> – при OAT &lt; LOUT для Type II/IV выводится предупреждение.</li>
+    </ul>
+
+    <hr>
+
+    <!-- 3. АРХИТЕКТУРА РЕШЕНИЯ -->
+    <h2>3. АРХИТЕКТУРА РЕШЕНИЯ</h2>
+    <h3>Общая архитектура</h3>
+    <p>Система построена по принципу <strong>статического веб-сайта</strong> с логикой на стороне клиента (JavaScript). Все вычисления выполняются в браузере пользователя. Данные (таблицы, правила, справочники) хранятся в виде JSON-файлов, которые загружаются по требованию и кешируются браузером.</p>
+
+    <h3>Компоненты</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Компонент</th><th>Назначение</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>index.html</code></td><td>Основная страница. Содержит разметку, стили (адаптивные), подключение JavaScript-модулей.</td></tr>
+                <tr><td><code>js/app.js</code></td><td>Главный модуль: инициализация, обработчики событий, связь UI с логикой, управление потоком расчёта, отображение результатов.</td></tr>
+                <tr><td><code>js/metar-parser.js</code></td><td>Парсинг METAR-строки: извлечение ICAO, температуры, видимости, событий с фильтрацией по разрешённому списку.</td></tr>
+                <tr><td><code>js/context-builder.js</code></td><td>Построение контекста: определение интенсивности снегопада по полной таблице (видимость, температура, день/ночь), вычисление булевых флагов.</td></tr>
+                <tr><td><code>js/hot-calculator.js</code></td><td>Основной расчёт HOT и AT: выбор температурного индекса, индекса события, применение правил, извлечение значения из таблицы, возврат результата и LOUT.</td></tr>
+                <tr><td><code>js/rule-engine.js</code></td><td>Универсальный движок для применения правил: проверка условий, выполнение действий.</td></tr>
+                <tr><td><code>js/utils.js</code></td><td>Вспомогательные функции: загрузка JSON с кешированием, поиск индексов.</td></tr>
+                <tr><td><code>data/config/metar_events.json</code></td><td>Справочник всех возможных кодов METAR.</td></tr>
+                <tr><td><code>data/config/allowance_events.json</code></td><td>Список событий, при которых показывается Allowance Time.</td></tr>
+                <tr><td><code>data/config/snow_intensity.json</code></td><td>Полная таблица интенсивности снегопада (TABLE 1).</td></tr>
+                <tr><td><code>data/tables/type_*.json</code></td><td>Таблицы HOT для каждого типа жидкости (8 файлов).</td></tr>
+                <tr><td><code>data/tables/allowance_pg.json</code></td><td>Таблица Allowance Time для пропиленгликоля (PG).</td></tr>
+                <tr><td><code>data/tables/allowance_eg.json</code></td><td>Таблица Allowance Time для этиленгликоля (EG).</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <hr>
+
+    <!-- 4. БИЗНЕС-ЛОГИКА -->
+    <h2>4. БИЗНЕС-ЛОГИКА (АЛГОРИТМ РАСЧЁТА HOT И AT)</h2>
+
+    <h3>Получение и парсинг METAR</h3>
+    <p><strong>Источники данных:</strong></p>
+    <ul>
+        <li><strong>Основной:</strong> VATSIM (<code>https://metar.vatsim.net/metar.php?id={ICAO}</code>). Не требует аутентификации, поддерживает CORS.</li>
+        <li><strong>Резервный:</strong> AviationWeather.gov (<code>https://aviationweather.gov/api/data/metar?ids={ICAO}&amp;format=raw</code>). Не требует аутентификации, поддерживает CORS.</li>
+        <li><strong>Ручной ввод METAR:</strong> имеет приоритет над внешними запросами.</li>
+    </ul>
+    <p><strong>Алгоритм парсинга</strong> (функция <code>parseMetar(metar, allowedEvents)</code>):</p>
+    <ol>
+        <li><strong>Извлечение ICAO</strong>: регулярное выражение <code>/\b([A-Z]{4})\b/</code>.</li>
+        <li><strong>Извлечение температуры (OAT)</strong>: группа вида <code>(M?\d{2})/(M?\d{2})</code>, где <code>M</code> означает минус.</li>
+        <li><strong>Извлечение видимости</strong>: если есть <code>CAVOK</code> → <code>'CAVOK'</code>; иначе первое четырёхзначное число.</li>
+        <li><strong>Извлечение событий</strong>: все токены <code>[+-]?[A-Z]{2,5}</code>, исключая <code>VRB</code>, <code>NOSIG</code>, <code>CAVOK</code>, <code>FEW</code>, <code>SCT</code>, <code>BKN</code>, <code>OVC</code>, <code>NSC</code>, <code>SKC</code>, <code>MPS</code>, <code>KPH</code>.</li>
+        <li><strong>Фильтрация</strong> по <code>allowedEvents</code> (из <code>metar_events.json</code>) с гибким сравнением (событие содержит код или код содержится в событии).</li>
+        <li><strong>Результат</strong>: объект <code>{ icao, temperature, visibility, events, raw }</code>.</li>
+    </ol>
+
+    <h3>Определение интенсивности снегопада (TABLE 1)</h3>
+    <p>Интенсивность снегопада определяется по таблице из файла <code>data/config/snow_intensity.json</code>. Алгоритм:</p>
+    <ol>
+        <li>Если нет событий, содержащих <code>SN</code>, <code>SG</code> или <code>GS</code> → возвращается <code>'No snow in METAR'</code>.</li>
+        <li>Определяется числовая видимость (<code>CAVOK</code> → 9999, иначе число из METAR).</li>
+        <li>Загружается таблица <code>ranges</code> из <code>snow_intensity.json</code>; выбираются флаги <code>isCold = (temperature &lt;= -1)</code> и <code>isNight = (dayNight === 'Night')</code>.</li>
+        <li>По диапазонам видимости находится нужная строка, и по комбинации флагов выбирается значение интенсивности (<code>"Heavy"</code>, <code>"Moderate"</code>, <code>"Light"</code>, <code>"Very Light"</code>).</li>
+    </ol>
+
+    <h3>Построение контекста (флаги)</h3>
+    <p>Функция <code>buildContext(events, temperature, visibility, dayNight)</code> возвращает объект с флагами:</p>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Флаг</th><th>Условие</th></tr></thead>
+            <tbody>
+                <tr><td><code>snowfall</code></td><td>Есть событие, содержащее <code>SN</code>, <code>SG</code> или <code>GS</code>.</td></tr>
+                <tr><td><code>heavy_snowfall</code></td><td>Есть событие, начинающееся с <code>+</code> и содержащее <code>SN</code>, <code>SG</code> или <code>GS</code>.</td></tr>
+                <tr><td><code>light_snowfall</code></td><td>Есть событие, начинающееся с <code>-</code> и содержащее <code>SN</code>, <code>SG</code> или <code>GS</code>.</td></tr>
+                <tr><td><code>has_ice_pellets</code></td><td>Есть событие, содержащее <code>PL</code>.</td></tr>
+                <tr><td><code>note_6</code></td><td>Есть событие, содержащее <code>SNRA</code>, <code>SNDZ</code>, <code>RASN</code> или <code>DZSN</code>.</td></tr>
+                <tr><td><code>snow_fzfg</code></td><td>Есть событие, содержащее <code>SNFZFG</code>.</td></tr>
+                <tr><td><code>snowfall_and_obscuration</code></td><td><code>snowfall</code> и есть событие из <code>[FG, BR, SA, DU, HZ, FU, VA]</code>, но нет <code>FZFG</code> или <code>FZBR</code>.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Выбор индекса события (<code>event_index</code>)</h3>
+    <h4>Структура <code>event_index</code></h4>
+    <p>Каждый файл HOT содержит массив <code>event_index</code> – массив массивов строк. Номер группы (индекс) соответствует столбцу в таблице <code>table</code>.</p>
+
+    <h4>Алгоритм выбора <code>event_index</code> по группам (если не сработали правила)</h4>
+    <p>Если правила <code>event_index_rules</code> не переопределили индекс, система выполняет поиск по <code>event_index</code>:</p>
+    <ol>
+        <li>Для каждого события из <code>events</code> проверяется, входит ли оно в какую-либо группу (нестрогое сравнение: событие содержит код группы или код группы содержится в событии).</li>
+        <li><strong>Первая</strong> подходящая группа определяет индекс.</li>
+        <li>Если ни одна группа не подошла – <code>event_index = null</code>.</li>
+    </ol>
+
+    <h4>Правила <code>event_index_rules</code> – переопределение индекса до поиска</h4>
+    <p>Правила <code>event_index_rules</code> применяются <strong>до</strong> поиска по группам. Каждое правило имеет структуру:</p>
+    <pre>{
+  "id": "уникальный_идентификатор",
+  "priority": 1,
+  "when": { ... },
+  "then": { "result": "строка" }   // или { "event_index_override": 5 }
+}</pre>
+    <ul>
+        <li><code>priority</code> – число; чем меньше, тем выше приоритет. Правила сортируются по возрастанию.</li>
+        <li><code>when</code> – объект с условиями (полный список приведён ниже).</li>
+        <li><code>then</code> – действие:
+            <ul>
+                <li><code>"result": "строка"</code> – возвращает специальный ключ (например, <code>"SNOWFALL INTENSITIES"</code>), который передаётся в основные правила.</li>
+                <li><code>"event_index_override": число</code> – сразу задаёт номер столбца, поиск по группам не выполняется.</li>
+            </ul>
+        </li>
+    </ul>
+    <p><strong>Полный список всех возможных условий в <code>when</code></strong>:</p>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Условие</th><th>Тип</th><th>Пример</th><th>Описание</th></tr></thead>
+            <tbody>
+                <tr><td><code>temp_lt</code></td><td>число</td><td><code>"temp_lt": -5</code></td><td>OAT &lt; значение</td></tr>
+                <tr><td><code>temp_lte</code></td><td>число</td><td><code>"temp_lte": 0</code></td><td>OAT ≤ значение</td></tr>
+                <tr><td><code>temp_gt</code></td><td>число</td><td><code>"temp_gt": 0</code></td><td>OAT &gt; значение</td></tr>
+                <tr><td><code>temp_gte</code></td><td>число</td><td><code>"temp_gte": -10</code></td><td>OAT ≥ значение</td></tr>
+                <tr><td><code>intensity_eq</code></td><td>строка</td><td><code>"intensity_eq": "Heavy"</code></td><td>Интенсивность точно равна</td></tr>
+                <tr><td><code>intensity_in</code></td><td>массив строк</td><td><code>"intensity_in": ["Light","Very Light"]</code></td><td>Интенсивность входит в список</td></tr>
+                <tr><td><code>event_index_eq</code></td><td>число или строка</td><td><code>"event_index_eq": 5</code></td><td>Текущий <code>event_index</code> равен</td></tr>
+                <tr><td><code>event_index_in</code></td><td>массив чисел/строк</td><td><code>"event_index_in": [5,6]</code></td><td>Текущий <code>event_index</code> входит в список</td></tr>
+                <tr><td><code>note_6</code></td><td>boolean</td><td><code>"note_6": true</code></td><td>Флаг <code>note_6</code></td></tr>
+                <tr><td><code>snowfall</code></td><td>boolean</td><td><code>"snowfall": true</code></td><td>Флаг <code>snowfall</code></td></tr>
+                <tr><td><code>heavy_snowfall</code></td><td>boolean</td><td><code>"heavy_snowfall": true</code></td><td>Флаг <code>heavy_snowfall</code></td></tr>
+                <tr><td><code>light_snowfall</code></td><td>boolean</td><td><code>"light_snowfall": true</code></td><td>Флаг <code>light_snowfall</code></td></tr>
+                <tr><td><code>has_ice_pellets</code></td><td>boolean</td><td><code>"has_ice_pellets": true</code></td><td>Флаг <code>has_ice_pellets</code></td></tr>
+                <tr><td><code>snow_fzfg</code></td><td>boolean</td><td><code>"snow_fzfg": true</code></td><td>Флаг <code>snow_fzfg</code></td></tr>
+                <tr><td><code>snowfall_and_obscuration</code></td><td>boolean</td><td><code>"snowfall_and_obscuration": true</code></td><td>Флаг <code>snowfall_and_obscuration</code></td></tr>
+                <tr><td><code>events_list_has_any</code></td><td>массив строк</td><td><code>"events_list_has_any": ["BR","FG"]</code></td><td>Хотя бы одно из событий присутствует в METAR</td></tr>
+                <tr><td><code>events_list_eq</code></td><td>массив строк</td><td><code>"events_list_eq": ["-RA","BR"]</code></td><td>Список событий METAR точно совпадает с указанным (после фильтрации)</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p><strong>Порядок применения правил <code>event_index_rules</code>:</strong></p>
+    <ol>
+        <li>Все правила сортируются по <code>priority</code> (по возрастанию).</li>
+        <li>Для каждого правила проверяются все условия в <code>when</code>. Если все условия истинны, правило считается сработавшим.</li>
+        <li>Если сработало правило с <code>then.event_index_override</code> – используется этот индекс, поиск по группам пропускается.</li>
+        <li>Если сработало правило с <code>then.result</code> – сохраняется строка (например, <code>"SNOWFALL INTENSITIES"</code>), она будет передана в основные правила как <code>event_index</code> (строковый).</li>
+        <li>Если ни одно правило не сработало, выполняется поиск по группам (описанный выше).</li>
+    </ol>
+
+    <h3>Определение температурного индекса (<code>temp_index</code>)</h3>
+    <p>Каждый файл таблицы HOT содержит массив <code>temperature_bands</code> – набор диапазонов с полями <code>min_inclusive</code> и <code>max_exclusive</code>. Перебором находится первый диапазон, в который попадает OAT. Если ни один не подходит – <code>temp_index = null</code> → HOT = <code>CAUTION</code>.</p>
+
+    <h3>Применение корректирующих правил (<code>rules</code>)</h3>
+    <p>Правила <code>rules</code> применяются <strong>после</strong> получения <code>temp_index</code> и <code>event_index</code> (который может быть числом или строкой). Они имеют ту же структуру, что и <code>event_index_rules</code> (приоритет, условия, действия). Действия:</p>
+    <ul>
+        <li><code>{ "result": "строка" }</code> – возвращает итоговое значение HOT (например, <code>"CAUTION..."</code> или <code>"0:14 - 0:17"</code>). Расчёт завершается.</li>
+        <li><code>{ "event_index_override": число }</code> – переопределяет <code>event_index</code> и продолжает расчёт (с новым индексом).</li>
+    </ul>
+    <p><strong>Алгоритм:</strong></p>
+    <ol>
+        <li>Сортировка правил <code>rules</code> по <code>priority</code> (возрастание).</li>
+        <li>Для каждого правила проверяются все условия (те же, что и для <code>event_index_rules</code>).</li>
+        <li>Если правило сработало:
+            <ul>
+                <li>Если есть <code>result</code> – возвращаем этот результат как HOT.</li>
+                <li>Если есть <code>event_index_override</code> – обновляем <code>eventIndex</code> и продолжаем (возвращаемся к шагу извлечения значения из таблицы).</li>
+            </ul>
+        </li>
+        <li>Если ни одно правило не сработало – переходим к извлечению значения из таблицы с текущими индексами.</li>
+    </ol>
+
+    <h3>Извлечение значения HOT из таблицы</h3>
+    <p>Если после всех правил <code>temp_index</code> и <code>event_index</code> – числа, то:</p>
+    <ol>
+        <li>Берётся строка <code>table[temp_index]</code>.</li>
+        <li>Проверяется, существует ли столбец с индексом <code>event_index</code> в этой строке.</li>
+        <li>Если столбец существует – берётся значение <code>cell = table[temp_index][event_index]</code>.</li>
+        <li>Если столбец отсутствует или <code>cell === null</code> или <code>cell === undefined</code> – возвращается <em>«CAUTION: No holdover time guidelines exist»</em>.</li>
+        <li>Если <code>cell</code> – <strong>объект</strong> (содержит ключи концентраций, например <code>"100/0"</code>, <code>"75/25"</code>, <code>"50/50"</code>) – возвращается этот объект (позже все ключи выводятся как отдельные строки).</li>
+        <li>Если <code>cell</code> – <strong>строка</strong> – возвращается эта строка (она может быть диапазоном, например <code>"0:14 - 0:17"</code>, или <code>CAUTION</code>).</li>
+    </ol>
+    <p>Если <code>event_index</code> остался строкой (не числом) – возвращается <em>«CAUTION: No holdover time guidelines exist»</em>.</p>
+
+    <h3>Расчёт Allowance Time (AT)</h3>
+    <p><strong>Условия показа AT:</strong></p>
+    <ul>
+        <li><code>isHotCaution = typeof hotResult.hot === 'string' && hotResult.hot.includes('CAUTION')</code></li>
+        <li><code>hasGS = parsed.events.some(e => e.includes('GS'))</code></li>
+        <li><code>hasAllowanceEvent = parsed.events.some(e => allowanceEvents?.allowance_events?.some(ae => e.includes(ae)))</code></li>
+    </ul>
+    <p><strong>Алгоритм расчёта AT:</strong></p>
+    <ol>
+        <li>Если <code>showAT</code> истинно, вызываются функции <code>calculateAT(..., 'allowance_pg')</code> и <code>calculateAT(..., 'allowance_eg')</code>.</li>
+        <li>Эти функции используют те же механизмы, что и расчёт HOT, но загружают таблицы <code>allowance_pg.json</code> и <code>allowance_eg.json</code> соответственно.</li>
+        <li>Каждая таблица AT содержит <strong>собственные</strong>:
+            <ul>
+                <li><code>temperature_bands</code> (диапазоны температур для AT);</li>
+                <li><code>table</code> (двумерный массив, где ячейки – строки, например, <code>"50 minutes"</code> или <code>"CAUTION..."</code>);</li>
+                <li><code>event_index</code> (группы событий для AT, обычно другие, чем для HOT);</li>
+                <li><code>event_index_rules</code> и <code>rules</code> (специфичные для AT).</li>
+            </ul>
+        </li>
+        <li>Если AT возвращает пустую строку, <code>null</code> или <code>undefined</code> – на UI выводится <em>«Нет данных»</em>.</li>
+        <li>Если AT возвращает <code>CAUTION</code> – выводится предупреждение.</li>
+    </ol>
+
+    <h3>Обработка LOUT (минимальная рабочая температура)</h3>
+    <p><strong>Источник данных:</strong> в JSON-файлах для Type II и IV добавлено поле <code>lout</code> (число). Например, для Type II Cryotech <code>lout = -30.5</code>, для Type IV Aviafluid <code>lout = -31</code>.</p>
+    <p><strong>Алгоритм проверки:</strong> В <code>app.js</code> после расчёта HOT выполняется проверка:</p>
+    <ul>
+        <li>Если <code>fluid</code> входит в список Type II или Type IV (все вариации).</li>
+        <li>И <code>hotResult.lout !== null</code>.</li>
+        <li>И <code>parsed.temperature &lt; hotResult.lout</code>.</li>
+    </ul>
+    <p>Тогда в массив <code>warnings</code> добавляется сообщение:</p>
+    <blockquote><em>«⚠️ Внимание: LOUT (минимальная рабочая температура) = XX°C. Текущая OAT = YY°C. Убедитесь, что LOUT ≤ OAT.»</em></blockquote>
+
+    <h3>Обработка CAVOK и маскирующих явлений</h3>
+    <p>В <code>app.js</code> после парсинга METAR выполняется проверка:</p>
+    <ol>
+        <li><code>isCavok = parsed.visibility === 'CAVOK'</code></li>
+        <li><code>hasPrecipitation = parsed.events.some(e => ['SN','RA','DZ','PL','SG','GS','IC','GR','PE'].some(p => e.includes(p)))</code></li>
+        <li><code>hasOnlyObscuration = !hasPrecipitation && parsed.events.length > 0 && parsed.events.every(e => ['FU','HZ','SA','DU','VA'].some(oc => e.includes(oc)))</code></li>
+    </ol>
+    <p>Если <code>isCavok</code> или <code>hasOnlyObscuration</code> истинно:</p>
+    <ul>
+        <li>Расчёт HOT не выполняется.</li>
+        <li>Формируется специальное сообщение:
+            <ul>
+                <li>Если <code>isCavok</code> → <em>«CAVOK — видимость более 10 км, осадков нет»</em></li>
+                <li>Если <code>hasOnlyObscuration</code> → <em>«Только маскирующие явления (без осадков), HOT не рассчитывается»</em></li>
+            </ul>
+        </li>
+        <li>Это сообщение выводится как HOT (вместо числового значения), AT не показывается.</li>
+    </ul>
+
+    <h3>Формирование итогового ответа</h3>
+    <p>Блок результата содержит:</p>
+    <ol>
+        <li><strong>Погоду</strong> (температура, видимость, события, интенсивность).</li>
+        <li><strong>HOT</strong> (строка или объект с концентрациями).</li>
+        <li><strong>AT</strong> (если применимо).</li>
+        <li><strong>Предупреждения</strong> (GS-рекомендация, LOUT).</li>
+        <li><strong>Сырой METAR</strong> (мелким серым шрифтом внизу).</li>
+    </ol>
+
+    <hr>
+
+    <!-- 5. СТРУКТУРА ПРОЕКТА -->
+    <h2>5. СТРУКТУРА ПРОЕКТА</h2>
+
+    <h3>Общая структура папок и файлов</h3>
+    <pre style="background:#1e1e1e; color:#d4d4d4; padding:12px 14px; border-radius:6px; overflow-x:auto; font-family:'Courier New',monospace; font-size:12px;">
+hot-web/
+├── index.html
+├── js/
+│   ├── app.js
+│   ├── metar-parser.js
+│   ├── context-builder.js
+│   ├── hot-calculator.js
+│   ├── rule-engine.js
+│   └── utils.js
+└── data/
+    ├── config/
+    │   ├── metar_events.json
+    │   ├── allowance_events.json
+    │   └── snow_intensity.json
+    └── tables/
+        ├── type_i.json
+        ├── type_ii_generic.json
+        ├── type_ii_cryotech.json
+        ├── type_ii_kilfrost.json
+        ├── type_iv_generic.json
+        ├── type_iv_aviafluid.json
+        ├── type_iv_nordix.json
+        ├── active_frost.json
+        ├── allowance_pg.json
+        └── allowance_eg.json
+    </pre>
+
+    <h3>Описание файлов</h3>
+    <ul>
+        <li><strong><code>index.html</code></strong> – Главная страница приложения. Содержит HTML-разметку, встроенные CSS-стили (адаптивные) и подключает JavaScript-модули через <code>&lt;script type="module"&gt;</code>. Включает поля ввода ICAO, выпадающий список жидкостей, радиокнопки выбора времени суток, поле для ручного ввода METAR, кнопку «Рассчитать» и блоки для отображения результатов и ошибок.</li>
+        <li><strong><code>js/app.js</code></strong> – Главный модуль приложения. Отвечает за инициализацию, загрузку конфигурационных JSON-файлов (<code>metar_events.json</code>, <code>allowance_events.json</code>), обработку событий пользователя (ввод ICAO, выбор жидкости, нажатие кнопки), управление потоком расчёта (запрос METAR, парсинг, построение контекста, вызов калькулятора HOT и AT), формирование и отображение результатов (включая предупреждения и сырой METAR).</li>
+        <li><strong><code>js/metar-parser.js</code></strong> – Модуль парсинга METAR-строк. Экспортирует функцию <code>parseMetar(metar, allowedEvents)</code>, которая извлекает из сырой METAR-строки ICAO, температуру, видимость, список событий (с фильтрацией по допустимому списку) и возвращает объект с этими полями.</li>
+        <li><strong><code>js/context-builder.js</code></strong> – Модуль построения контекста. Экспортирует функции:
+            <ul>
+                <li><code>getSnowIntensity(events, temperature, visibility, dayNight)</code> – определяет интенсивность снегопада по таблице из <code>snow_intensity.json</code>.</li>
+                <li><code>buildContext(events, temperature, visibility, dayNight)</code> – вычисляет булевы флаги (<code>snowfall</code>, <code>heavy_snowfall</code>, <code>light_snowfall</code>, <code>has_ice_pellets</code>, <code>note_6</code>, <code>snow_fzfg</code>, <code>snowfall_and_obscuration</code>) и возвращает объект с ними вместе с интенсивностью.</li>
+            </ul>
+        </li>
+        <li><strong><code>js/hot-calculator.js</code></strong> – Основной модуль расчёта HOT и AT. Экспортирует функции <code>calculateHOT</code> и <code>calculateAT</code>, которые загружают соответствующие таблицы (из <code>data/tables/</code>), определяют температурный индекс и индекс события, применяют правила (<code>event_index_rules</code> и <code>rules</code>), извлекают значение из таблицы и возвращают результат вместе с полем <code>lout</code> (для Type II/IV). Логика полностью соответствует описанной в разделе 4.</li>
+        <li><strong><code>js/rule-engine.js</code></strong> – Универсальный движок для применения правил. Экспортирует функции <code>evaluateCondition(when, context, events)</code> и <code>applyRules(rules, context, events)</code>. Первая проверяет, выполняются ли условия из объекта <code>when</code> (температура, интенсивность, флаги, события), вторая применяет массив правил с учётом приоритета и возвращает действие (<code>result</code> или <code>event_index_override</code>).</li>
+        <li><strong><code>js/utils.js</code></strong> – Вспомогательные функции. Экспортирует:
+            <ul>
+                <li><code>loadJSON(url)</code> – асинхронная загрузка JSON с кешированием.</li>
+                <li><code>findTemperatureIndex(temperature, bands)</code> – поиск индекса температурного диапазона.</li>
+                <li><code>findEventIndex(events, eventIndex)</code> – поиск индекса события по группам.</li>
+            </ul>
+        </li>
+        <li><strong><code>data/config/metar_events.json</code></strong> – Справочный файл, содержащий массив всех возможных кодов METAR (строки). Используется для фильтрации событий при парсинге.</li>
+        <li><strong><code>data/config/allowance_events.json</code></strong> – Справочный файл, содержащий массив событий (строки), при наличии которых должен показываться Allowance Time. Взят из исходных таблиц AT.</li>
+        <li><strong><code>data/config/snow_intensity.json</code></strong> – Файл с полной таблицей интенсивности снегопада (TABLE 1). Содержит массив диапазонов видимости, для каждого указаны значения интенсивности для комбинаций (день/ночь, температура ≤ -1°C / > -1°C).</li>
+        <li><strong><code>data/tables/type_*.json</code></strong> – Восемь файлов (по одному на каждый тип жидкости), содержащих таблицы HOT. Каждый файл включает:
+            <ul>
+                <li><code>temperature_bands</code> – массив диапазонов температур.</li>
+                <li><code>table</code> – двумерный массив значений (ячейки – объекты с концентрациями или строки).</li>
+                <li><code>event_index</code> – группы событий.</li>
+                <li><code>event_index_rules</code> и <code>rules</code> – правила переопределения и корректировки.</li>
+                <li><code>lout</code> (только для Type II/IV) – минимальная рабочая температура.</li>
+            </ul>
+        </li>
+        <li><strong><code>data/tables/allowance_pg.json</code> и <code>allowance_eg.json</code></strong> – Файлы с таблицами Allowance Time для пропиленгликоля и этиленгликоля. Структура аналогична <code>type_*.json</code>, но без поля <code>lout</code>, а ячейки <code>table</code> – строки (например, <code>"50 minutes"</code>), без объектов концентраций.</li>
+    </ul>
+
+    <hr>
+
+    <!-- 6. ПРОТОКОЛ ТЕСТИРОВАНИЯ -->
+    <h2>6. ПРОТОКОЛ ТЕСТИРОВАНИЯ</h2>
+
+    <h3>Таблица тестовых сценариев</h3>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>METAR</th>
+                    <th>ICAO</th>
+                    <th>Жидкость</th>
+                    <th>День/Ночь</th>
+                    <th>Ожидаемый HOT</th>
+                    <th>Ожидаемый AT</th>
+                    <th>Ожидаемые предупреждения</th>
+                    <th>Пояснение</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td><code>UUEE 281200Z 00000MPS 9999 -SN OVC010 M05/M08</code></td>
+                    <td>UUEE</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>0:14 – 0:17</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>Базовый сценарий: слабый снег (<code>-SN</code>), видимость 9999 м → <code>Very Light</code>, температура -5°C → HOT по таблице Type I.</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td><code>UUDD 281300Z 00000MPS 6000 -SN BKN010 M04/M07</code></td>
+                    <td>UUDD</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>0:08 – 0:13</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>Видимость 6000 м → <code>Light</code>, температура -4°C → HOT.</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td><code>ULLI 281400Z 00000MPS 2500 SN OVC008 M06/M10</code></td>
+                    <td>ULLI</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>0:06 – 0:11</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>Видимость 2500 м → <code>Moderate</code>, температура -6°C → HOT.</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td><code>USSS 281500Z 00000MPS 0500 +SN VV002 M10/M14</code></td>
+                    <td>USSS</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>CAUTION...</code></td>
+                    <td><strong>PG: <code>50 minutes</code>, EG: <code>70 minutes</code></strong></td>
+                    <td>Нет</td>
+                    <td>Сильный снег (<code>+SN</code>), видимость 500 м → <code>Heavy</code> → HOT = CAUTION. AT показывается (условие HOT=CAUTION).</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td><code>URSS 281600Z 00000MPS CAVOK 15/10</code></td>
+                    <td>URSS</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>CAVOK — видимость более 10 км, осадков нет</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>CAVOK – осадков нет, расчёт HOT не производится.</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td><code>UWGG 281700Z 00000MPS 2000 BR OVC003 02/01</code></td>
+                    <td>UWGG</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>Только маскирующие явления (без осадков), HOT не рассчитывается</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>Только маскирующее явление (BR), без осадков → специальное сообщение.</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td><code>ULLI 281800Z 00000MPS 3000 GS BKN015 M03/M06</code></td>
+                    <td>ULLI</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>0:06 – 0:11</code></td>
+                    <td><strong>PG: <code>40 minutes</code>, EG: <code>50 minutes</code></strong></td>
+                    <td><strong>GS-рекомендация</strong></td>
+                    <td>Наличие GS (снежные крупицы) вызывает показ AT и рекомендацию. HOT рассчитывается как для снега (Moderate).</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td><code>UOOO 281900Z 00000MPS 4000 -PL BKN020 M12/M16</code></td>
+                    <td>UOOO</td>
+                    <td>Type I Generic</td>
+                    <td>День</td>
+                    <td><code>CAUTION...</code></td>
+                    <td><strong>PG: <code>25 minutes</code>, EG: <code>40 minutes</code></strong></td>
+                    <td>Нет</td>
+                    <td>Событие -PL (ледяные гранулы) → HOT=CAUTION, AT показывается (из-за allowance event).</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td><code>UEEE 282000Z 00000MPS 0500 SN VV002 M32/M36</code></td>
+                    <td>UEEE</td>
+                    <td>Type II Cryotech</td>
+                    <td>Ночь</td>
+                    <td><code>CAUTION...</code></td>
+                    <td><strong>PG: <code>30 minutes</code>, EG: <code>50 minutes</code></strong></td>
+                    <td><strong>LOUT</strong></td>
+                    <td>Температура -32°C ниже LOUT для Type II Cryotech (-30.5°C) → предупреждение. HOT=CAUTION из-за heavy снега (ночь, видимость 500 м → Heavy).</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td><code>UUEE 282100Z 00000MPS 9999 -SN OVC010 M05/M08</code></td>
+                    <td>UUEE</td>
+                    <td>Type IV Generic</td>
+                    <td>День</td>
+                    <td><code>100/0: 1:15-2:15</code><br><code>75/25: 1:25-2:40</code><br><code>50/50: 0:30-0:55</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>Проверка отображения всех концентраций для Type IV. HOT = объект с тремя ключами.</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td><code>UUEE 282200Z 00000MPS 9999 -SN OVC011 00/M02</code></td>
+                    <td>UUEE</td>
+                    <td>Active Frost (Type I)</td>
+                    <td>День</td>
+                    <td><code>0:45</code></td>
+                    <td>Не показывается</td>
+                    <td>Нет</td>
+                    <td>Active Frost Type I при OAT ≥ -1°C → по правилу возвращается фиксированное время 0:45.</td>
+                </tr>
+                <tr>
+                    <td>12</td>
+                    <td><code>ULLI 282300Z 00000MPS 1200 SN OVC007 M05/M08</code></td>
+                    <td>ULLI</td>
+                    <td>Type I Generic</td>
+                    <td>Ночь</td>
+                    <td><code>CAUTION...</code></td>
+                    <td><strong>PG: <code>30 minutes</code>, EG: <code>50 minutes</code></strong></td>
+                    <td>Нет</td>
+                    <td>Ночной режим: видимость 1200 м → по таблице интенсивности ночью это Heavy (в отличие от дня, где было бы Moderate). Heavy → HOT=CAUTION, AT показывается.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>КОНЕЦ ТЕХНИЧЕСКОГО ЗАДАНИЯ</p>
+    </div>
+
+</div>
+</body>
+</html>
