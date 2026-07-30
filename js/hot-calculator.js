@@ -46,12 +46,8 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     const ruleResult = applyRules(event_index_rules, ruleContext, events);
     if (ruleResult.matched) {
       if (ruleResult.result !== null) {
-        const resultStr = ruleResult.result;
-        if (resultStr.includes('CAUTION') || resultStr.includes(':')) {
-          return { hot: resultStr, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
-        } else {
-          eventIndex = resultStr;
-        }
+        // FIX: Правило вернуло финальный результат – сразу возвращаем
+        return { hot: ruleResult.result, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
       } else if (ruleResult.event_index_override !== null) {
         eventIndex = ruleResult.event_index_override;
       }
@@ -78,15 +74,12 @@ export async function calculateHOT(fluidType, temperature, intensity, context, e
     const ruleResult2 = applyRules(rules, ruleContext, events);
     if (ruleResult2.matched) {
       if (ruleResult2.result !== null) {
-        finalResult = ruleResult2.result;
+        // FIX: То же самое – сразу возвращаем финальный результат
+        return { hot: ruleResult2.result, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
       } else if (ruleResult2.event_index_override !== null) {
         eventIndex = ruleResult2.event_index_override;
       }
     }
-  }
-
-  if (finalResult !== null) {
-    return { hot: finalResult, at_pg: null, at_eg: null, warnings: [], lout: lout || null };
   }
 
   // 6. Извлекаем значение из таблицы
