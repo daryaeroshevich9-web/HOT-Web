@@ -92,7 +92,8 @@ async function onCalculate() {
     console.log('🧠 Контекст:', context);
 
     // --- ПРОВЕРКА CAVOK И МАСКИРУЮЩИХ ЯВЛЕНИЙ ---
-    const obscurationOnlyCodes = ['FU', 'HZ', 'SA', 'DU', 'VA'];
+    // Исправлено: добавлены BR и FG (туман) как маскирующие явления без осадков
+    const obscurationOnlyCodes = ['FU', 'HZ', 'SA', 'DU', 'VA', 'BR', 'FG'];
     const isCavok = parsed.visibility === 'CAVOK';
     const hasPrecipitation = parsed.events.some(e => {
       const precipCodes = ['SN', 'RA', 'DZ', 'PL', 'SG', 'GS', 'IC', 'GR', 'PE'];
