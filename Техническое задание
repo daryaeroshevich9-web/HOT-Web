@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Техническое задание HOT BOT</title>
+    <title>Техническое задание HOT BOT (без тест-кейсов)</title>
     <style>
+        /* те же стили, что в исходном файле */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -22,121 +23,23 @@
             border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.06);
         }
-        h1 {
-            font-size: 22px;
-            color: #0d6efd;
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        h2 {
-            font-size: 18px;
-            color: #0d6efd;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-left: 5px solid #0d6efd;
-            padding-left: 12px;
-        }
-        h3 {
-            font-size: 16px;
-            margin-top: 14px;
-            margin-bottom: 6px;
-            color: #0b5ed7;
-        }
-        h4 {
-            font-size: 14px;
-            margin-top: 10px;
-            margin-bottom: 4px;
-            color: #0b5ed7;
-        }
-        p, li {
-            line-height: 1.5;
-            margin-bottom: 4px;
-        }
-        ul, ol {
-            padding-left: 20px;
-            margin-bottom: 8px;
-        }
-        code {
-            background: #eef2f6;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85em;
-        }
-        .highlight {
-            font-weight: 600;
-            color: #0d6efd;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12px 0;
-            font-size: 12px;
-        }
-        th, td {
-            border: 1px solid #d1d5db;
-            padding: 6px 8px;
-            text-align: left;
-            vertical-align: top;
-        }
-        th {
-            background: #e9edf2;
-            font-weight: 600;
-        }
-        .table-wrap {
-            overflow-x: auto;
-        }
-        .badge {
-            display: inline-block;
-            background: #e9edf2;
-            padding: 0 6px;
-            border-radius: 10px;
-            font-size: 0.8em;
-        }
-        .footer {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #d1d5db;
-            text-align: center;
-            color: #6c757d;
-            font-size: 13px;
-        }
-        hr {
-            margin: 20px 0;
-            border: 0;
-            border-top: 1px dashed #d1d5db;
-        }
-        pre {
-            background: #f4f4f4;
-            padding: 10px 12px;
-            border-radius: 6px;
-            overflow-x: auto;
-            font-size: 13px;
-            margin: 6px 0 10px 0;
-        }
-        blockquote {
-            margin: 6px 0 8px 20px;
-            padding-left: 10px;
-            border-left: 3px solid #0d6efd;
-            color: #1e293b;
-        }
-        @media (max-width: 700px) {
-            .container { padding: 15px; }
-            body { font-size: 13px; }
-            table { font-size: 11px; }
-            th, td { padding: 4px 6px; }
-        }
-        @media print {
-            body { background: white; padding: 10px; font-size: 11px; }
-            .container { box-shadow: none; padding: 15px; }
-            h1 { font-size: 18px; }
-            h2 { font-size: 15px; }
-            h3 { font-size: 13px; }
-            table { font-size: 10px; }
-            pre { font-size: 10px; }
-        }
+        h1 { font-size: 22px; color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 8px; margin-bottom: 20px; text-align: center; }
+        h2 { font-size: 18px; color: #0d6efd; margin-top: 20px; margin-bottom: 10px; border-left: 5px solid #0d6efd; padding-left: 12px; }
+        h3 { font-size: 16px; margin-top: 14px; margin-bottom: 6px; color: #0b5ed7; }
+        h4 { font-size: 14px; margin-top: 10px; margin-bottom: 4px; color: #0b5ed7; }
+        p, li { line-height: 1.5; margin-bottom: 4px; }
+        ul, ol { padding-left: 20px; margin-bottom: 8px; }
+        code { background: #eef2f6; padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 0.85em; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12px; }
+        th, td { border: 1px solid #d1d5db; padding: 6px 8px; text-align: left; vertical-align: top; }
+        th { background: #e9edf2; font-weight: 600; }
+        .table-wrap { overflow-x: auto; }
+        pre { background: #f4f4f4; padding: 10px 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin: 6px 0 10px 0; }
+        blockquote { margin: 6px 0 8px 20px; padding-left: 10px; border-left: 3px solid #0d6efd; color: #1e293b; }
+        hr { margin: 20px 0; border: 0; border-top: 1px dashed #d1d5db; }
+        .footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #d1d5db; text-align: center; color: #6c757d; font-size: 13px; }
+        @media (max-width: 700px) { .container { padding: 15px; } body { font-size: 13px; } table { font-size: 11px; } th, td { padding: 4px 6px; } }
+        @media print { body { background: white; padding: 10px; font-size: 11px; } .container { box-shadow: none; padding: 15px; } h1 { font-size: 18px; } h2 { font-size: 15px; } h3 { font-size: 13px; } table { font-size: 10px; } pre { font-size: 10px; } }
     </style>
 </head>
 <body>
@@ -520,166 +423,8 @@ hot-web/
         <li><strong><code>data/tables/allowance_pg.json</code> и <code>allowance_eg.json</code></strong> – Файлы с таблицами Allowance Time для пропиленгликоля и этиленгликоля. Структура аналогична <code>type_*.json</code>, но без поля <code>lout</code>, а ячейки <code>table</code> – строки (например, <code>"50 minutes"</code>), без объектов концентраций.</li>
     </ul>
 
-    <hr>
-
-    <!-- 6. ПРОТОКОЛ ТЕСТИРОВАНИЯ -->
-    <h2>6. ПРОТОКОЛ ТЕСТИРОВАНИЯ</h2>
-
-    <h3>Таблица тестовых сценариев</h3>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th>№</th>
-                    <th>METAR</th>
-                    <th>ICAO</th>
-                    <th>Жидкость</th>
-                    <th>День/Ночь</th>
-                    <th>Ожидаемый HOT</th>
-                    <th>Ожидаемый AT</th>
-                    <th>Ожидаемые предупреждения</th>
-                    <th>Пояснение</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td><code>UUEE 281200Z 00000MPS 9999 -SN OVC010 M05/M08</code></td>
-                    <td>UUEE</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>0:14 – 0:17</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>Базовый сценарий: слабый снег (<code>-SN</code>), видимость 9999 м → <code>Very Light</code>, температура -5°C → HOT по таблице Type I.</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td><code>UUDD 281300Z 00000MPS 6000 -SN BKN010 M04/M07</code></td>
-                    <td>UUDD</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>0:08 – 0:13</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>Видимость 6000 м → <code>Light</code>, температура -4°C → HOT.</td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td><code>ULLI 281400Z 00000MPS 2500 SN OVC008 M06/M10</code></td>
-                    <td>ULLI</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>0:06 – 0:11</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>Видимость 2500 м → <code>Moderate</code>, температура -6°C → HOT.</td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td><code>USSS 281500Z 00000MPS 0500 +SN VV002 M10/M14</code></td>
-                    <td>USSS</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>CAUTION...</code></td>
-                    <td><strong>PG: <code>50 minutes</code>, EG: <code>70 minutes</code></strong></td>
-                    <td>Нет</td>
-                    <td>Сильный снег (<code>+SN</code>), видимость 500 м → <code>Heavy</code> → HOT = CAUTION. AT показывается (условие HOT=CAUTION).</td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td><code>URSS 281600Z 00000MPS CAVOK 15/10</code></td>
-                    <td>URSS</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>CAVOK — видимость более 10 км, осадков нет</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>CAVOK – осадков нет, расчёт HOT не производится.</td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td><code>UWGG 281700Z 00000MPS 2000 BR OVC003 02/01</code></td>
-                    <td>UWGG</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>Только маскирующие явления (без осадков), HOT не рассчитывается</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>Только маскирующее явление (BR), без осадков → специальное сообщение.</td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td><code>ULLI 281800Z 00000MPS 3000 GS BKN015 M03/M06</code></td>
-                    <td>ULLI</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>0:06 – 0:11</code></td>
-                    <td><strong>PG: <code>40 minutes</code>, EG: <code>50 minutes</code></strong></td>
-                    <td><strong>GS-рекомендация</strong></td>
-                    <td>Наличие GS (снежные крупицы) вызывает показ AT и рекомендацию. HOT рассчитывается как для снега (Moderate).</td>
-                </tr>
-                <tr>
-                    <td>8</td>
-                    <td><code>UOOO 281900Z 00000MPS 4000 -PL BKN020 M12/M16</code></td>
-                    <td>UOOO</td>
-                    <td>Type I Generic</td>
-                    <td>День</td>
-                    <td><code>CAUTION...</code></td>
-                    <td><strong>PG: <code>25 minutes</code>, EG: <code>40 minutes</code></strong></td>
-                    <td>Нет</td>
-                    <td>Событие -PL (ледяные гранулы) → HOT=CAUTION, AT показывается (из-за allowance event).</td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td><code>UEEE 282000Z 00000MPS 0500 SN VV002 M32/M36</code></td>
-                    <td>UEEE</td>
-                    <td>Type II Cryotech</td>
-                    <td>Ночь</td>
-                    <td><code>CAUTION...</code></td>
-                    <td><strong>PG: <code>30 minutes</code>, EG: <code>50 minutes</code></strong></td>
-                    <td><strong>LOUT</strong></td>
-                    <td>Температура -32°C ниже LOUT для Type II Cryotech (-30.5°C) → предупреждение. HOT=CAUTION из-за heavy снега (ночь, видимость 500 м → Heavy).</td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td><code>UUEE 282100Z 00000MPS 9999 -SN OVC010 M05/M08</code></td>
-                    <td>UUEE</td>
-                    <td>Type IV Generic</td>
-                    <td>День</td>
-                    <td><code>100/0: 1:15-2:15</code><br><code>75/25: 1:25-2:40</code><br><code>50/50: 0:30-0:55</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>Проверка отображения всех концентраций для Type IV. HOT = объект с тремя ключами.</td>
-                </tr>
-                <tr>
-                    <td>11</td>
-                    <td><code>UUEE 282200Z 00000MPS 9999 -SN OVC011 00/M02</code></td>
-                    <td>UUEE</td>
-                    <td>Active Frost (Type I)</td>
-                    <td>День</td>
-                    <td><code>0:45</code></td>
-                    <td>Не показывается</td>
-                    <td>Нет</td>
-                    <td>Active Frost Type I при OAT ≥ -1°C → по правилу возвращается фиксированное время 0:45.</td>
-                </tr>
-                <tr>
-                    <td>12</td>
-                    <td><code>ULLI 282300Z 00000MPS 1200 SN OVC007 M05/M08</code></td>
-                    <td>ULLI</td>
-                    <td>Type I Generic</td>
-                    <td>Ночь</td>
-                    <td><code>CAUTION...</code></td>
-                    <td><strong>PG: <code>30 minutes</code>, EG: <code>50 minutes</code></strong></td>
-                    <td>Нет</td>
-                    <td>Ночной режим: видимость 1200 м → по таблице интенсивности ночью это Heavy (в отличие от дня, где было бы Moderate). Heavy → HOT=CAUTION, AT показывается.</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
     <div class="footer">
-        <p>КОНЕЦ ТЕХНИЧЕСКОГО ЗАДАНИЯ</p>
+        <p>КОНЕЦ ТЕХНИЧЕСКОГО ЗАДАНИЯ (разделы 1–5)</p>
     </div>
 
 </div>
