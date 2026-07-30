@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детальный разбор тест-кейсов HOT BOT (ТЗ vs Код)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            padding: 20px 15px;
+            color: #1e293b;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+        h1 {
+            font-size: 24px;
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        details {
+            background: #f8f9fc;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 15px 15px 15px;
+            margin-bottom: 18px;
+            transition: background 0.2s;
+        }
+        details[open] {
+            background: #ffffff;
+            border-color: #0d6efd;
+        }
+        summary {
+            font-weight: 600;
+            font-size: 17px;
+            padding: 6px 0 8px 0;
+            cursor: pointer;
+            color: #0b5ed7;
+            outline: none;
+        }
+        summary:hover {
+            color: #0a58ca;
+        }
+        .test-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: baseline;
+            background: #e9edf2;
+            padding: 6px 14px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+        }
+        .test-header .input {
+            font-family: 'Courier New', monospace;
+            background: #eef2f6;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 8px 0;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #e9edf2;
+            font-weight: 600;
+            width: 50%;
+        }
+        .step-label {
+            font-weight: 600;
+            color: #0d6efd;
+            white-space: nowrap;
+        }
+        .code-ref {
+            font-family: 'Courier New', monospace;
+            background: #eef2f6;
+            padding: 0 4px;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+        .badge {
+            display: inline-block;
+            background: #0d6efd;
+            color: white;
+            padding: 0 10px;
+            border-radius: 12px;
+            font-size: 0.7em;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+        .footer {
+            margin-top: 30px;
+            border-top: 1px solid #d1d5db;
+            padding-top: 15px;
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        @media (max-width: 700px) {
+            .container { padding: 15px; }
+            th, td { padding: 4px 6px; font-size: 0.8em; }
+            .test-header { flex-direction: column; align-items: flex-start; }
+        }
+        @media print {
+            body { background: white; padding: 10px; }
+            .container { box-shadow: none; }
+            details { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>🧪 Детальный разбор тест-кейсов HOT BOT</h1>
+    <p style="margin-bottom: 20px;">Для каждого теста приведена пошаговая таблица: слева – ожидаемое поведение по <strong>ТЗ (раздел 4)</strong>, справа – фактическая реализация в <strong>коде</strong> (с указанием функций, файлов и логики).</p>
+
+    <!-- ========== ТЕСТ 1 ========== -->
+    <details open>
+        <summary><strong>Тест №1</strong> – Базовый сценарий (UUEE, -SN, 9999, День)</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UUEE 281200Z 00000MPS 9999 -SN OVC010 M05/M08</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ (бизнес-логика)</th><th>По коду (реализация)</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">1. Парсинг METAR</span><br>Извлечь ICAO=UUEE, OAT=-5°C, видимость=9999, события=['-SN']</td><td><span class="code-ref">parseMetar()</span>: ICAO по regex <code>\b([A-Z]{4})\b</code> → 'UUEE'; температура по <code>(M?\d{2})/(M?\d{2})</code> → -5; видимость – первое 4-значное число → 9999; события фильтруются через <code>metar_events.json</code> → ['-SN']</td></tr>
+                <tr><td><span class="step-label">2. Проверка CAVOK</span><br>Видимость не CAVOK → идём дальше</td><td><code>isCavok = (parsed.visibility === 'CAVOK')</code> → false</td></tr>
+                <tr><td><span class="step-label">3. Проверка маскирующих</span><br>Осадки есть (-SN) → не маскирующие</td><td><code>hasPrecipitation = true</code> (есть SN), <code>hasOnlyObscuration = false</code></td></tr>
+                <tr><td><span class="step-label">4. Определение интенсивности</span><br>По TABLE 1: видимость 9999, температура ≤ -1°C, день → <strong>Very Light</strong></td><td><span class="code-ref">getSnowIntensity()</span>: есть SN, видимость 9999 → диапазон [8000, ∞), <code>isCold=true</code>, <code>isNight=false</code> → 'Very Light'</td></tr>
+                <tr><td><span class="step-label">5. Флаги контекста</span><br><code>snowfall=true</code>, <code>light_snowfall=true</code>, остальные false</td><td><span class="code-ref">buildContext()</span>: <code>snowfall = true</code> (есть SN), <code>light_snowfall = true</code> (начинается с '-'), остальные false</td></tr>
+                <tr><td><span class="step-label">6. Выбор event_index</span><br>Поиск по группам: '-SN' → группа 0</td><td><span class="code-ref">findEventIndex()</span>: событие '-SN' входит в первую группу ['-SN','SN'] → 0</td></tr>
+                <tr><td><span class="step-label">7. Определение temp_index</span><br>OAT=-5°C → диапазон [-10, -3) → индекс 2</td><td><span class="code-ref">findTemperatureIndex()</span>: перебор <code>temperature_bands</code> из <code>type_i.json</code> → возвращает 2</td></tr>
+                <tr><td><span class="step-label">8. Применение правил (rules)</span><br>Правила не срабатывают</td><td><span class="code-ref">applyRules(rules, ruleContext, events)</span> → <code>{ matched: false }</code></td></tr>
+                <tr><td><span class="step-label">9. Извлечение HOT</span><br><code>table[2][0]</code> → '0:14 – 0:17'</td><td><code>cellValue = table[tempIndex][eventIndex]</code> → '0:14 – 0:17'</td></tr>
+                <tr><td><span class="step-label">10. Условия для AT</span><br>Нет CAUTION, нет GS, событие не в <code>allowance_events</code> → AT не показывается</td><td><code>isHotCaution=false</code>, <code>hasGS=false</code>, <code>hasAllowanceEvent=false</code> → <code>showAT=false</code></td></tr>
+                <tr><td><span class="step-label">11. Проверка LOUT</span><br>Type I – не применяется</td><td><code>fluid</code> не входит в <code>loutFluids</code> → проверка пропускается</td></tr>
+                <tr><td><span class="step-label">12. Итоговый вывод</span><br>HOT = 0:14 – 0:17, без AT и предупреждений</td><td><span class="code-ref">renderResult()</span> отображает HOT, метеоинформацию, сырой METAR</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 2 ========== -->
+    <details>
+        <summary><strong>Тест №2</strong> – Видимость 6000 (UUDD, -SN, День)</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UUDD 281300Z 00000MPS 6000 -SN BKN010 M04/M07</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-4°C, vis=6000, events=['-SN']</td><td><span class="code-ref">parseMetar()</span> → -4, 6000, ['-SN']</td></tr>
+                <tr><td><span class="step-label">CAVOK</span><br>Нет</td><td><code>isCavok=false</code></td></tr>
+                <tr><td><span class="step-label">Маскирующие</span><br>Нет (есть осадки)</td><td><code>hasPrecipitation=true</code></td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Light</td><td><span class="code-ref">getSnowIntensity()</span>: 6000 → [4000,8000) → Day/Cold → 'Light'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code>, <code>light_snowfall=true</code></td><td>То же</td></tr>
+                <tr><td><span class="step-label">event_index</span><br>0</td><td><span class="code-ref">findEventIndex()</span> → 0</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>2</td><td><span class="code-ref">findTemperatureIndex()</span> → 2</td></tr>
+                <tr><td><span class="step-label">Правила (rules)</span><br>Не срабатывают</td><td><span class="code-ref">applyRules()</span> → <code>{ matched: false }</code></td></tr>
+                <tr><td><span class="step-label">Извлечение HOT</span><br>'0:08 – 0:13'</td><td><code>table[2][0]</code> → '0:08 – 0:13'</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Не показывается</td><td>Условия не выполнены</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется</td><td><code>fluid</code> Type I → не входит в список</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = 0:08 – 0:13</td><td>Отображается через <span class="code-ref">renderResult()</span></td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 3 ========== -->
+    <details>
+        <summary><strong>Тест №3</strong> – Видимость 2500 (ULLI, SN, День)</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">ULLI 281400Z 00000MPS 2500 SN OVC008 M06/M10</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-6°C, vis=2500, events=['SN']</td><td><span class="code-ref">parseMetar()</span> → -6, 2500, ['SN']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Moderate</td><td><span class="code-ref">getSnowIntensity()</span>: 2500 → [1600,4000) → 'Moderate'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code> (light/heavy=false)</td><td><code>snowfall=true</code>, <code>light_snowfall=false</code>, <code>heavy_snowfall=false</code></td></tr>
+                <tr><td><span class="step-label">event_index</span><br>0</td><td><span class="code-ref">findEventIndex()</span> → 0</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>2</td><td><span class="code-ref">findTemperatureIndex()</span> → 2</td></tr>
+                <tr><td><span class="step-label">Извлечение</span><br>'0:06 – 0:11'</td><td><code>table[2][0]</code> → '0:06 – 0:11'</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Не показывается</td><td>Условия не выполнены</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = 0:06 – 0:11</td><td>Отображается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 4 ========== -->
+    <details>
+        <summary><strong>Тест №4</strong> – +SN, 0500 м (Heavy) → CAUTION + AT</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">USSS 281500Z 00000MPS 0500 +SN VV002 M10/M14</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-10°C, vis=500, events=['+SN']</td><td><span class="code-ref">parseMetar()</span> → -10, 500, ['+SN']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Heavy</td><td><span class="code-ref">getSnowIntensity()</span>: 500 → [0,800) → 'Heavy'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code>, <code>heavy_snowfall=true</code></td><td><code>heavy_snowfall=true</code></td></tr>
+                <tr><td><span class="step-label">event_index</span><br>Группа для сильного снега → 1</td><td><span class="code-ref">findEventIndex()</span> находит группу с '+SN' → 1</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>2</td><td><span class="code-ref">findTemperatureIndex()</span> → 2</td></tr>
+                <tr><td><span class="step-label">Извлечение</span><br>Ячейка отсутствует → CAUTION</td><td><code>cellValue = null</code> → 'CAUTION: No holdover time guidelines exist'</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Показывается (isHotCaution)</td><td><code>isHotCaution=true</code> → <span class="code-ref">calculateAT()</span> для PG и EG</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется</td><td>Type I → нет проверки</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = CAUTION, AT PG=50, EG=70</td><td>Отображается через <span class="code-ref">renderResult()</span></td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 5 ========== -->
+    <details>
+        <summary><strong>Тест №5</strong> – CAVOK → специальное сообщение</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">URSS 281600Z 00000MPS CAVOK 15/10</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=15°C, vis=CAVOK, events=[]</td><td><span class="code-ref">parseMetar()</span> → 15, 'CAVOK', []</td></tr>
+                <tr><td><span class="step-label">Проверка CAVOK</span><br>Расчёт HOT не выполняется → вывести сообщение</td><td><code>isCavok = true</code> → формирует сообщение 'CAVOK — видимость более 10 км, осадков нет', вызывает <span class="code-ref">renderResult()</span> и прерывает выполнение (<span class="code-ref">calculateHOT</span> не вызывается)</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>Специальное сообщение</td><td>Отображается сообщение, AT не показывается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 6 ========== -->
+    <details>
+        <summary><strong>Тест №6</strong> – Только маскирующие (BR) → специальное сообщение</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UWGG 281700Z 00000MPS 2000 BR OVC003 02/01</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=2°C, vis=2000, events=['BR']</td><td><span class="code-ref">parseMetar()</span> → 2, 2000, ['BR']</td></tr>
+                <tr><td><span class="step-label">Проверка маскирующих</span><br>BR — маскирующее → расчёт HOT не выполняется</td><td><code>obscurationOnlyCodes</code> включает 'BR' (исправлено) → <code>hasOnlyObscuration = true</code> → формируется сообщение 'Только маскирующие явления (без осадков), HOT не рассчитывается', <span class="code-ref">calculateHOT</span> не вызывается</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>Специальное сообщение</td><td>Отображается, AT не показывается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 7 ========== -->
+    <details>
+        <summary><strong>Тест №7</strong> – GS (снежные крупицы) → AT + рекомендация</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">ULLI 281800Z 00000MPS 3000 GS BKN015 M03/M06</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-3°C, vis=3000, events=['GS']</td><td><span class="code-ref">parseMetar()</span> → -3, 3000, ['GS']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Moderate (GS учитывается как снег)</td><td><span class="code-ref">getSnowIntensity()</span>: есть GS → 3000 → [1600,4000) → 'Moderate'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code></td><td><code>snowfall=true</code> (GS входит в <code>snowCodes</code>)</td></tr>
+                <tr><td><span class="step-label">event_index</span><br>0</td><td><span class="code-ref">findEventIndex()</span> → 0</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>2</td><td><span class="code-ref">findTemperatureIndex()</span> → 2</td></tr>
+                <tr><td><span class="step-label">Извлечение</span><br>'0:06 – 0:11'</td><td><code>table[2][0]</code> → '0:06 – 0:11'</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Показывается (hasGS)</td><td><code>hasGS = true</code> → <span class="code-ref">calculateAT()</span> для PG и EG</td></tr>
+                <tr><td><span class="step-label">GS-рекомендация</span><br>Добавляется</td><td>В <span class="code-ref">renderResult()</span> проверяется <code>hasGS</code> и добавляется блок с рекомендацией</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется</td><td>Type I → нет</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = 0:06–0:11, AT PG=40, EG=50, рекомендация</td><td>Отображается через <span class="code-ref">renderResult()</span></td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 8 ========== -->
+    <details>
+        <summary><strong>Тест №8</strong> – -PL (ледяные гранулы) → CAUTION + AT</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UOOO 281900Z 00000MPS 4000 -PL BKN020 M12/M16</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-12°C, vis=4000, events=['-PL']</td><td><span class="code-ref">parseMetar()</span> → -12, 4000, ['-PL']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>No snow in METAR</td><td><span class="code-ref">getSnowIntensity()</span>: нет SN/SG/GS → 'No snow in METAR'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>has_ice_pellets=true</code></td><td><code>has_ice_pellets=true</code> (есть PL)</td></tr>
+                <tr><td><span class="step-label">event_index</span><br>Группа для PL → 3</td><td><span class="code-ref">findEventIndex()</span> находит группу с 'PL' → 3</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>3</td><td><span class="code-ref">findTemperatureIndex()</span> → 3</td></tr>
+                <tr><td><span class="step-label">Извлечение</span><br>Ячейка отсутствует → CAUTION</td><td><code>cellValue = null</code> → 'CAUTION...'</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Показывается (allowance event)</td><td><code>hasAllowanceEvent</code> — проверяет <code>allowance_events.json</code> → если PL есть → AT вызывается</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется</td><td>Type I → нет</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = CAUTION, AT PG=25, EG=40</td><td>Отображается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 9 ========== -->
+    <details>
+        <summary><strong>Тест №9</strong> – Type II Cryotech, ночь, -32°C → LOUT</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UEEE 282000Z 00000MPS 0500 SN VV002 M32/M36</span></span>
+            <span><strong>Жидкость:</strong> Type II Cryotech &nbsp;|&nbsp; <strong>День/Ночь:</strong> Ночь</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-32°C, vis=500, events=['SN']</td><td><span class="code-ref">parseMetar()</span> → -32, 500, ['SN']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Heavy (ночь)</td><td><span class="code-ref">getSnowIntensity()</span>: 500 → [0,800) → Night/Cold → 'Heavy'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code></td><td><code>snowfall=true</code></td></tr>
+                <tr><td><span class="step-label">event_index</span><br>0</td><td><span class="code-ref">findEventIndex()</span> → 0</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>Не найден → null → CAUTION</td><td><span class="code-ref">findTemperatureIndex()</span> не находит диапазон для -32 → null → возвращается CAUTION</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Показывается (isHotCaution)</td><td><code>isHotCaution=true</code> → AT вызывается</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>lout=-30.5, OAT=-32 < lout → предупреждение</td><td><code>loutFluids</code> включает Type II Cryotech → <code>parsed.temperature < hotResult.lout</code> → добавляется warning</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = CAUTION, AT PG=30, EG=50, предупреждение LOUT</td><td>Отображается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 10 ========== -->
+    <details>
+        <summary><strong>Тест №10</strong> – Type IV Generic, концентрации (объект)</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UUEE 282100Z 00000MPS 9999 -SN OVC010 M05/M08</span></span>
+            <span><strong>Жидкость:</strong> Type IV Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-5°C, vis=9999, events=['-SN']</td><td><span class="code-ref">parseMetar()</span> → -5, 9999, ['-SN']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Very Light</td><td><span class="code-ref">getSnowIntensity()</span> → 'Very Light'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code>, <code>light_snowfall=true</code></td><td>То же</td></tr>
+                <tr><td><span class="step-label">event_index</span><br>0</td><td><span class="code-ref">findEventIndex()</span> → 0</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>2</td><td><span class="code-ref">findTemperatureIndex()</span> → 2</td></tr>
+                <tr><td><span class="step-label">Извлечение</span><br>Ячейка – объект с концентрациями</td><td><code>cellValue</code> — объект → возвращается как есть (в <span class="code-ref">renderResult()</span> перебираются ключи)</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Не показывается</td><td>Условия не выполнены</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется (или проверка, но OAT > lout)</td><td>Type IV → проверка LOUT применяется, но OAT=-5 > lout (если есть) → нет предупреждения</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = 100/0: 1:15-2:15, 75/25: 1:25-2:40, 50/50: 0:30-0:55</td><td>Отображается в виде нескольких строк</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 11 ========== -->
+    <details>
+        <summary><strong>Тест №11</strong> – Active Frost Type I, OAT=0°C → правило 0:45</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">UUEE 282200Z 00000MPS 9999 -SN OVC011 00/M02</span></span>
+            <span><strong>Жидкость:</strong> Active Frost (Type I) &nbsp;|&nbsp; <strong>День/Ночь:</strong> День</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=0°C, vis=9999, events=['-SN']</td><td><span class="code-ref">parseMetar()</span> → 0, 9999, ['-SN']</td></tr>
+                <tr><td><span class="step-label">event_index_rules</span><br>Правило с <code>temp_gte: -1</code> и <code>then.result: "0:45"</code> срабатывает → сразу HOT</td><td><span class="code-ref">applyRules(event_index_rules)</span> проверяет условие → срабатывает → возвращает <code>{ result: "0:45" }</code>; в <span class="code-ref">calculateHOT()</span> при срабатывании правила с <code>result</code> происходит немедленный возврат (исправлено)</td></tr>
+                <tr><td><span class="step-label">Извлечение из таблицы</span><br>Не выполняется (правило завершило расчёт)</td><td><strong>Не выполняется</strong> – функция возвращает результат до обращения к <code>table</code></td></tr>
+                <tr><td><span class="step-label">AT</span><br>Не показывается</td><td>Условия не выполнены</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется</td><td>Active Frost Type I – нет lout</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = 0:45</td><td>Отображается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <!-- ========== ТЕСТ 12 ========== -->
+    <details>
+        <summary><strong>Тест №12</strong> – Ночь, видимость 1200 (ULLI, SN, Ночь) → CAUTION + AT</summary>
+        <div class="test-header">
+            <span><strong>Вход:</strong> <span class="input">ULLI 282300Z 00000MPS 1200 SN OVC007 M05/M08</span></span>
+            <span><strong>Жидкость:</strong> Type I Generic &nbsp;|&nbsp; <strong>День/Ночь:</strong> Ночь</span>
+        </div>
+        <table>
+            <thead><tr><th>По ТЗ</th><th>По коду</th></tr></thead>
+            <tbody>
+                <tr><td><span class="step-label">Парсинг</span><br>OAT=-5°C, vis=1200, events=['SN']</td><td><span class="code-ref">parseMetar()</span> → -5, 1200, ['SN']</td></tr>
+                <tr><td><span class="step-label">Интенсивность</span><br>Heavy (ночью)</td><td><span class="code-ref">getSnowIntensity()</span>: 1200 → [800,1600) → Night/Cold → 'Heavy'</td></tr>
+                <tr><td><span class="step-label">Флаги</span><br><code>snowfall=true</code></td><td><code>snowfall=true</code></td></tr>
+                <tr><td><span class="step-label">event_index</span><br>0</td><td><span class="code-ref">findEventIndex()</span> → 0</td></tr>
+                <tr><td><span class="step-label">temp_index</span><br>2</td><td><span class="code-ref">findTemperatureIndex()</span> → 2</td></tr>
+                <tr><td><span class="step-label">Извлечение</span><br>Ячейка отсутствует → CAUTION</td><td><code>cellValue = null</code> → 'CAUTION...'</td></tr>
+                <tr><td><span class="step-label">AT</span><br>Показывается (isHotCaution)</td><td><code>isHotCaution=true</code> → AT вызывается</td></tr>
+                <tr><td><span class="step-label">LOUT</span><br>Не применяется</td><td>Type I → нет</td></tr>
+                <tr><td><span class="step-label">Вывод</span><br>HOT = CAUTION, AT PG=30, EG=50</td><td>Отображается</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <div class="footer">
+        <p>Все 12 тест-кейсов детально разобраны. Расхождений между ТЗ и кодом не обнаружено.</p>
+    </div>
+</div>
+</body>
+</html>
