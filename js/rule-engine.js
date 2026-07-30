@@ -52,9 +52,17 @@ export function evaluateCondition(when, context, events) {
         if (!Array.isArray(value) || !value.some(v => events.some(e => e.includes(v)))) return false;
         break;
       case 'events_list_eq':
-        if (!Array.isArray(value) || value.length !== events.length || !value.every(v => events.some(e => e.includes(v)))) return false;
+        // FIX: строгое сравнение множеств (порядок не важен)
+        if (!Array.isArray(value)) return false;
+        const sortedEvents = [...events].sort();
+        const sortedValue = [...value].sort();
+        if (sortedEvents.length !== sortedValue.length) return false;
+        for (let i = 0; i < sortedEvents.length; i++) {
+          if (sortedEvents[i] !== sortedValue[i]) return false;
+        }
+        return true;
         break;
-      // Заглушка для условия из бота
+      // Заглушка для условия из бота (оставлено как есть)
       case 'event_index_eq_table_len_ref':
         return false;
       default:
